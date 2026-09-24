@@ -34,15 +34,17 @@ public class MovieService {
                 .map(existingMovie -> {
 
                     existingMovie.setTitle(movie.getTitle());
-                    existingMovie.setGenre(movie.getGenre());
                     existingMovie.setReleaseYear(movie.getReleaseYear());
                     existingMovie.setDescription(movie.getDescription());
                     existingMovie.setAverageRating(movie.getAverageRating());
+                    existingMovie.setGenres(movie.getGenres());
 
                     return movieRepository.save(existingMovie);
                 })
                 .orElseThrow(() ->
-                        new RuntimeException("Movie not found with id: " + id));
+                        new RuntimeException(
+                                "Movie not found with id: " + id
+                        ));
     }
 
     public void deleteMovie(Long id) {
@@ -54,7 +56,7 @@ public class MovieService {
     }
 
     public List<Movie> searchByGenre(String genre) {
-        return movieRepository.findByGenreIgnoreCase(genre);
+        return movieRepository.findByGenre(genre);
     }
 
     public List<Movie> searchByYear(Integer year) {
