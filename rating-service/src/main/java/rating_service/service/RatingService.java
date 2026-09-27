@@ -1,8 +1,12 @@
 package rating_service.service;
 
 import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import rating_service.event.RatingEvent;
+
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
 
@@ -10,9 +14,14 @@ import java.util.Map;
 public class RatingService {
 
     private final Neo4jClient neo4jClient;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public RatingService(Neo4jClient neo4jClient) {
+    public RatingService(
+            Neo4jClient neo4jClient,
+            KafkaTemplate<String, Object> kafkaTemplate) {
+
         this.neo4jClient = neo4jClient;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     public Map<String, Object> createOrUpdateRating(
@@ -26,7 +35,7 @@ public class RatingService {
             );
         }
 
-        return neo4jClient.query("""
+        Map<String, Object> rating = neo4jClient.query("""
                 MATCH (u:User {id: $userId})
                 MATCH (m:Movie {id: $movieId})
                 MERGE (u)-[r:RATED]->(m)
@@ -53,6 +62,22 @@ public class RatingService {
                         new RuntimeException(
                                 "User or Movie not found"
                         ));
+
+        RatingEvent event = new RatingEvent(
+                "RATING_CREATED_OR_UPDATED",
+                userId,
+                movieId,
+                score,
+                Instant.now().toString()
+        );
+
+        kafkaTemplate.send(
+                "movie-ratings",
+                userId.toString(),
+                event
+        );
+
+        return rating;
     }
 
     public Collection<Map<String, Object>> getUserRatings(Long userId) {
