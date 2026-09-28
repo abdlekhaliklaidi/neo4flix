@@ -36,8 +36,11 @@ public class RatingController {
             return ResponseEntity.badRequest()
                     .body(e.getMessage());
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+            .body(e.getMessage());
         }
+
     }
 
     @GetMapping("/user/{userId}")
