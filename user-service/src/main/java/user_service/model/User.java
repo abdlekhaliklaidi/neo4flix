@@ -1,5 +1,6 @@
 package user_service.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 
@@ -11,14 +12,16 @@ public class User {
 
     private String username;
     private String email;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
     private String role;
 
     public User() {
     }
 
-    public User(Long id, String username, String email,
-                String password, String role) {
+    public User(Long id, String username, String email, String password, String role) {
         this.id = id;
         this.username = username;
         this.email = email;

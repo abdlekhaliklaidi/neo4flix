@@ -2,6 +2,7 @@ package user_service.service;
 
 import user_service.Repository.UserRepository;
 import user_service.model.User;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,12 +27,20 @@ public class UserService {
 
     public User createUser(User user) {
 
-        if (userRepository.existsByUsername(user.getUsername())) {
-            throw new RuntimeException("Username already exists");
+        if (userRepository.existsByUsername(
+                user.getUsername())) {
+
+            throw new RuntimeException(
+                    "Username already exists"
+            );
         }
 
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email already exists");
+        if (userRepository.existsByEmail(
+                user.getEmail())) {
+
+            throw new RuntimeException(
+                    "Email already exists"
+            );
         }
 
         if (user.getRole() == null) {
@@ -46,21 +55,36 @@ public class UserService {
         return userRepository.findById(id)
                 .map(existingUser -> {
 
-                    existingUser.setUsername(user.getUsername());
-                    existingUser.setEmail(user.getEmail());
-
-                    if (user.getPassword() != null &&
-                            !user.getPassword().isBlank()) {
-                        existingUser.setPassword(user.getPassword());
+                    if (user.getUsername() != null) {
+                        existingUser.setUsername(
+                                user.getUsername()
+                        );
                     }
 
-                    return userRepository.save(existingUser);
+                    if (user.getEmail() != null) {
+                        existingUser.setEmail(
+                                user.getEmail()
+                        );
+                    }
+
+                    return userRepository.save(
+                            existingUser
+                    );
                 })
                 .orElseThrow(() ->
-                        new RuntimeException("User not found with id: " + id));
+                        new RuntimeException(
+                                "User not found with id: " + id
+                        ));
     }
 
     public void deleteUser(Long id) {
+
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException(
+                    "User not found"
+            );
+        }
+
         userRepository.deleteById(id);
     }
 }
