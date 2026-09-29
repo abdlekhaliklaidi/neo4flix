@@ -18,15 +18,12 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
-public class JwtAuthenticationFilter
-        extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(
-            JwtService jwtService,
-            UserRepository userRepository) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
 
         this.jwtService = jwtService;
         this.userRepository = userRepository;
@@ -39,29 +36,23 @@ public class JwtAuthenticationFilter
             FilterChain filterChain)
             throws ServletException, IOException {
 
-        String authHeader =
-                request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null ||
-                !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token =
-                authHeader.substring(7);
+        String token = authHeader.substring(7);
 
         try {
 
             if (jwtService.isTokenValid(token)) {
 
-                String username =
-                        jwtService.extractUsername(token);
+                String username = jwtService.extractUsername(token);
 
-                if (SecurityContextHolder
-                        .getContext()
-                        .getAuthentication() == null) {
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
                     User user =
                             userRepository
@@ -70,8 +61,7 @@ public class JwtAuthenticationFilter
 
                     if (user != null) {
 
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                         user,
                                         null,
                                         List.of(
@@ -81,8 +71,7 @@ public class JwtAuthenticationFilter
                                         )
                                 );
 
-                        SecurityContextHolder
-                                .getContext()
+                        SecurityContextHolder.getContext()
                                 .setAuthentication(authentication);
                     }
                 }

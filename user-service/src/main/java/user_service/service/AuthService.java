@@ -29,24 +29,21 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
 
-        if (request.getUsername() == null ||
-                request.getUsername().isBlank()) {
+        if (request.getUsername() == null || request.getUsername().isBlank()) {
 
             throw new IllegalArgumentException(
                     "Username is required"
             );
         }
 
-        if (request.getEmail() == null ||
-                request.getEmail().isBlank()) {
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
 
             throw new IllegalArgumentException(
                     "Email is required"
             );
         }
 
-        if (request.getPassword() == null ||
-                request.getPassword().isBlank()) {
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
 
             throw new IllegalArgumentException(
                     "Password is required"
@@ -74,8 +71,8 @@ public class AuthService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
 
-        // IMPORTANT:
-        // Password is hashed before saving
+
+        // Password is hashed
         user.setPassword(
                 passwordEncoder.encode(
                         request.getPassword()
@@ -84,11 +81,9 @@ public class AuthService {
 
         user.setRole("USER");
 
-        User savedUser =
-                userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        String token =
-                jwtService.generateToken(savedUser);
+        String token = jwtService.generateToken(savedUser);
 
         return new AuthResponse(
                 token,
@@ -100,28 +95,21 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
 
-        User user =
-                userRepository
-                        .findByUsername(
-                                request.getUsername()
-                        )
+        User user = userRepository.findByUsername(request.getUsername())
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
                                         "Invalid username or password"
                                 )
                         );
 
-        if (!passwordEncoder.matches(
-                request.getPassword(),
-                user.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
 
             throw new IllegalArgumentException(
                     "Invalid username or password"
             );
         }
 
-        String token =
-                jwtService.generateToken(user);
+        String token = jwtService.generateToken(user);
 
         return new AuthResponse(
                 token,

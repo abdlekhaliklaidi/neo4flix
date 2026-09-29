@@ -22,9 +22,7 @@ public class JwtService {
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration}") long expiration) {
 
-        this.key = Keys.hmacShaKeyFor(
-                secret.getBytes(StandardCharsets.UTF_8)
-        );
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
         this.expiration = expiration;
     }
@@ -36,9 +34,8 @@ public class JwtService {
                 .claim("userId", user.getId())
                 .claim("role", user.getRole())
                 .issuedAt(new Date())
-                .expiration(
-                        new Date(System.currentTimeMillis() + expiration)
-                )
+                
+                .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key)
                 .compact();
     }

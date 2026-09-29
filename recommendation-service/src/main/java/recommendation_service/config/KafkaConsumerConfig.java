@@ -19,8 +19,7 @@ public class KafkaConsumerConfig {
     @Bean
     public ConsumerFactory<String, RatingEvent> consumerFactory() {
 
-        JsonDeserializer<RatingEvent> deserializer =
-                new JsonDeserializer<>(RatingEvent.class);
+        JsonDeserializer<RatingEvent> deserializer = new JsonDeserializer<>(RatingEvent.class);
 
         deserializer.addTrustedPackages(
                 "recommendation_service.event"
@@ -60,10 +59,9 @@ public class KafkaConsumerConfig {
     kafkaListenerContainerFactory() {
 
         ConcurrentKafkaListenerContainerFactory<String, RatingEvent>
-                factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
+              factory = new ConcurrentKafkaListenerContainerFactory<>();
 
-        factory.setConsumerFactory(consumerFactory());
+              factory.setConsumerFactory(consumerFactory());
 
         return factory;
     }
