@@ -1,5 +1,118 @@
 services:
 
+  gateway:
+    build:
+      context: ./gateway_service
+    container_name: neo4flix-gateway
+    restart: unless-stopped
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+
+    depends_on:
+      - user-service
+      - movie-service
+      - rating-service
+      - recommendation-service
+
+    networks:
+      - neo4flix-network
+
+
+  user-service:
+    build:
+      context: ./user-service
+    container_name: neo4flix-user-service
+    restart: unless-stopped
+
+    environment:
+      SPRING_NEO4J_URI: bolt://neo4j:7687
+      SPRING_NEO4J_USERNAME: ${SPRING_NEO4J_USERNAME}
+      SPRING_NEO4J_PASSWORD: ${SPRING_NEO4J_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+
+    depends_on:
+      - neo4j
+
+    networks:
+      - neo4flix-network
+
+
+  movie-service:
+    build:
+      context: ./movie-service
+    container_name: neo4flix-movie-service
+    restart: unless-stopped
+
+    environment:
+      SPRING_NEO4J_URI: bolt://neo4j:7687
+      SPRING_NEO4J_USERNAME: ${SPRING_NEO4J_USERNAME}
+      SPRING_NEO4J_PASSWORD: ${SPRING_NEO4J_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+
+    depends_on:
+      - neo4j
+
+    networks:
+      - neo4flix-network
+
+
+  rating-service:
+    build:
+      context: ./rating-service
+    container_name: neo4flix-rating-service
+    restart: unless-stopped
+
+    environment:
+      SPRING_NEO4J_URI: bolt://neo4j:7687
+      SPRING_NEO4J_USERNAME: ${SPRING_NEO4J_USERNAME}
+      SPRING_NEO4J_PASSWORD: ${SPRING_NEO4J_PASSWORD}
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+
+    depends_on:
+      - neo4j
+      - kafka
+
+    networks:
+      - neo4flix-network
+
+
+  recommendation-service:
+    build:
+      context: ./recommendation-service
+    container_name: neo4flix-recommendation-service
+    restart: unless-stopped
+
+    environment:
+      SPRING_NEO4J_URI: bolt://neo4j:7687
+      SPRING_NEO4J_USERNAME: ${SPRING_NEO4J_USERNAME}
+      SPRING_NEO4J_PASSWORD: ${SPRING_NEO4J_PASSWORD}
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+
+    depends_on:
+      - neo4j
+      - kafka
+
+    networks:
+      - neo4flix-network
+
+
   neo4j:
     image: docker.io/library/neo4j:5
     container_name: neo4flix-neo4j
@@ -10,13 +123,16 @@ services:
       - "7687:7687"
 
     environment:
-      NEO4J_AUTH: neo4j/password
+      NEO4J_AUTH: ${SPRING_NEO4J_USERNAME}/${SPRING_NEO4J_PASSWORD}
 
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
       - neo4j_import:/var/lib/neo4j/import
       - neo4j_plugins:/plugins
+
+    networks:
+      - neo4flix-network
 
 
   kafka:
@@ -32,7 +148,7 @@ services:
       KAFKA_PROCESS_ROLES: broker,controller
 
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
 
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
@@ -44,11 +160,13 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-
       KAFKA_NUM_PARTITIONS: 3
 
     volumes:
       - kafka_data:/var/lib/kafka/data
+
+    networks:
+      - neo4flix-network
 
 
 volumes:
@@ -57,3 +175,8 @@ volumes:
   neo4j_import:
   neo4j_plugins:
   kafka_data:
+
+
+networks:
+  neo4flix-network:
+    driver: bridge
