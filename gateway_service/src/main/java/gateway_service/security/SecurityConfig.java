@@ -35,41 +35,43 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 
-        ReactiveAuthenticationManager authenticationManager = authentication -> Mono.just(authentication);
+    ReactiveAuthenticationManager authenticationManager =
+            authentication -> Mono.just(authentication);
 
-        AuthenticationWebFilter jwtFilter = new AuthenticationWebFilter(authenticationManager);
+    AuthenticationWebFilter jwtFilter = new AuthenticationWebFilter(authenticationManager);
 
-        jwtFilter.setServerAuthenticationConverter(jwtAuthenticationFilter);
+    jwtFilter.setServerAuthenticationConverter(jwtAuthenticationFilter);
 
-        jwtFilter.setSecurityContextRepository( NoOpServerSecurityContextRepository.getInstance() );
+    jwtFilter.setSecurityContextRepository(
+            NoOpServerSecurityContextRepository.getInstance()
+    );
 
-        return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+    return http
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
+            .authorizeExchange(exchange -> exchange
+                    .pathMatchers(
+                            "/api/auth/login",
+                            "/api/auth/register",
+                            "/actuator/health",
+                            "/actuator/gateway/**"
+                    ).permitAll()
 
-                .authorizeExchange(exchange -> exchange
-                .pathMatchers(
-                "/api/auth/login",
-                "/api/auth/register",
-                "/actuator/health",
-                "/actuator/gateway/**"
-                ).permitAll()
+                    .pathMatchers(HttpMethod.OPTIONS).permitAll()
 
-                .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                    .anyExchange().authenticated()
+            )
 
-                .anyExchange().authenticated()
-                )
+            .addFilterAt(
+                    jwtFilter,
+                    SecurityWebFiltersOrder.AUTHENTICATION
+            )
 
+            .build();
+        }
 
-                .addFilterAt(
-                        jwtFilter,
-                        SecurityWebFiltersOrder.AUTHENTICATION
-                )
-
-                .build();
-    }
     
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
