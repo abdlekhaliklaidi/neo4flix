@@ -10,7 +10,7 @@ import user_service.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthService authService;

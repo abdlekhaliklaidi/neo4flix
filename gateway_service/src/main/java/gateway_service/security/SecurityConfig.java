@@ -46,22 +46,22 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
-                .cors(cors -> cors
-                        .configurationSource(corsConfigurationSource())
-                )
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+
 
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers(
-                                "/api/users/login",
-                                "/api/users/register",
-                                "/actuator/health"
-                        ).permitAll()
+                .pathMatchers(
+                "/api/auth/login",
+                "/api/auth/register",
+                "/actuator/health",
+                "/actuator/gateway/**"
+                ).permitAll()
 
-                        // CORS preflight
-                        .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                .pathMatchers(HttpMethod.OPTIONS).permitAll()
 
-                        .anyExchange().authenticated()
+                .anyExchange().authenticated()
                 )
+
 
                 .addFilterAt(
                         jwtFilter,
@@ -70,39 +70,46 @@ public class SecurityConfig {
 
                 .build();
     }
-
+    
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-       
-        config.setAllowedOrigins(List.of( "http://localhost:3000" ));
+        config.setAllowedOrigins(
+                List.of("http://localhost:4200")
+        );
 
-        config.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "PATCH",
-                "OPTIONS"
-        ));
+        config.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "PATCH",
+                        "OPTIONS"
+                )
+        );
 
-        
-        config.setAllowedHeaders(List.of(
-                HttpHeaders.AUTHORIZATION,
-                HttpHeaders.CONTENT_TYPE,
-                HttpHeaders.ACCEPT
-        ));
+        config.setAllowedHeaders(
+                List.of(
+                        HttpHeaders.AUTHORIZATION,
+                        HttpHeaders.CONTENT_TYPE,
+                        HttpHeaders.ACCEPT
+                )
+        );
 
-        
         config.setAllowCredentials(false);
 
         config.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration(
+                "/**",
+                config
+        );
 
         return source;
     }
