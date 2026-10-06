@@ -85,6 +85,7 @@ import { AuthService } from '../../core/auth.service';
           rgba(0, 0, 0, .9)
         ),
         #0b0b0b;
+
       padding: 20px;
       box-sizing: border-box;
     }
@@ -188,6 +189,7 @@ export class RegisterComponent {
   username = '';
   email = '';
   password = '';
+
   error = '';
   loading = false;
 
@@ -218,26 +220,40 @@ export class RegisterComponent {
     ).subscribe({
 
       next: () => {
+
         this.loading = false;
+
+
         this.router.navigate(['/login']);
       },
 
-      error: e => {
+      error: (e) => {
 
         this.loading = false;
 
+        console.error(
+          'REGISTER HTTP ERROR:',
+          e
+        );
+
         if (e.status === 400) {
+
           this.error =
             typeof e.error === 'string'
               ? e.error
               : 'Invalid registration data.';
+
         } else if (e.status === 0) {
-          this.error = 'Cannot connect to the server.';
+
+          this.error =
+            'Cannot connect to the server.';
+
         } else {
-          this.error = 'Registration failed. Please try again.';
+
+          this.error =
+            'Registration failed. Please try again.';
         }
       }
-
     });
   }
 }

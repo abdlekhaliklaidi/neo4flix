@@ -35,8 +35,7 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 
-    ReactiveAuthenticationManager authenticationManager =
-            authentication -> Mono.just(authentication);
+    ReactiveAuthenticationManager authenticationManager = authentication -> Mono.just(authentication);
 
     AuthenticationWebFilter jwtFilter = new AuthenticationWebFilter(authenticationManager);
 
@@ -49,19 +48,25 @@ public class SecurityConfig {
     return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .cors(cors ->
+                    cors.configurationSource(corsConfigurationSource())
+            )
 
             .authorizeExchange(exchange -> exchange
+
                     .pathMatchers(
                             "/api/auth/login",
                             "/api/auth/register",
+                            "/api/movies/**",
                             "/actuator/health",
                             "/actuator/gateway/**"
                     ).permitAll()
 
-                    .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                    .pathMatchers(HttpMethod.OPTIONS)
+                    .permitAll()
 
-                    .anyExchange().authenticated()
+                    .anyExchange()
+                    .authenticated()
             )
 
             .addFilterAt(

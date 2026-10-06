@@ -2,12 +2,14 @@ package user_service.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Node;
 
 @Node("User")
 public class User {
 
     @Id
+    @GeneratedValue
     private Long id;
 
     private String username;
@@ -21,7 +23,13 @@ public class User {
     public User() {
     }
 
-    public User(Long id, String username, String email, String password, String role) {
+    public User(
+            Long id,
+            String username,
+            String email,
+            String password,
+            String role
+    ) {
         this.id = id;
         this.username = username;
         this.email = email;

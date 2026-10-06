@@ -1,4 +1,11 @@
-import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
+import {
+  Injectable,
+  signal,
+  computed,
+  inject,
+  PLATFORM_ID
+} from '@angular/core';
+
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -6,7 +13,14 @@ import { tap } from 'rxjs';
 
 export interface AuthResponse {
   token: string;
-  userId: number;
+  userId: number | null;
+  username: string;
+  role: string;
+}
+
+export interface RegisterResponse {
+  token: string;
+  userId: number | null;
   username: string;
   role: string;
 }
@@ -20,7 +34,9 @@ export class AuthService {
 
   private platformId = inject(PLATFORM_ID);
 
-  private _user = signal<AuthResponse | null>(this.loadUser());
+  private _user = signal<AuthResponse | null>(
+    this.loadUser()
+  );
 
   user = this._user.asReadonly();
 
@@ -37,7 +53,7 @@ export class AuthService {
 
   private loadUser(): AuthResponse | null {
 
-    if (!isPlatformBrowser(this.platformId)) {
+    if (!this.isBrowser()) {
       return null;
     }
 
@@ -57,16 +73,22 @@ export class AuthService {
 
   login(username: string, password: string) {
 
+    const body = {
+      username: username.trim(),
+      password
+    };
+
+    console.log('LOGIN BODY:', body);
+
     return this.http
       .post<AuthResponse>(
         `${API}/auth/login`,
-        {
-          username,
-          password
-        }
+        body
       )
       .pipe(
         tap(response => {
+          console.log('LOGIN RESPONSE:', response);
+
           this.save(response);
         })
       );
@@ -78,20 +100,24 @@ export class AuthService {
     password: string
   ) {
 
-    return this.http
-      .post<AuthResponse>(
-        `${API}/auth/register`,
-        {
-          username,
-          email,
-          password
-        }
-      )
-      .pipe(
-        tap(response => {
-          this.save(response);
-        })
-      );
+    const body = {
+      username: username.trim(),
+      email: email.trim(),
+      password
+    };
+
+    console.log('REGISTER BODY:', body);
+
+    /*
+     * Important:
+     * Registration does NOT save the JWT.
+     * User must login after creating the account.
+     */
+
+    return this.http.post<RegisterResponse>(
+      `${API}/auth/register`,
+      body
+    );
   }
 
   private save(response: AuthResponse) {
@@ -120,16 +146,24 @@ export class AuthService {
       response.role
     );
 
-    localStorage.setItem(
-      'userId',
-    response.userId.toString()
-    );
+    if (response.userId != null) {
 
+      localStorage.setItem(
+        'userId',
+        response.userId.toString()
+      );
+
+    } else {
+
+      localStorage.removeItem('userId');
+    }
 
     this._user.set(response);
   }
 
   logout() {
+
+    console.log('LOGOUT');
 
     if (this.isBrowser()) {
 
@@ -150,7 +184,14 @@ export class AuthService {
   }
 
   get userId(): number | null {
-  return this._user()?.userId ?? null;
+    return this._user()?.userId ?? null;
   }
 
+  get username(): string | null {
+    return this._user()?.username ?? null;
+  }
+
+  get role(): string | null {
+    return this._user()?.role ?? null;
+  }
 }
