@@ -112,7 +112,22 @@ services:
     networks:
       - neo4flix-network
 
+  neo4flix-frontend:
+    build:
+      context: ./neo4flix-frontend
+      dockerfile: Dockerfile
+    container_name: neo4flix-frontend
+    restart: unless-stopped
 
+    ports:
+      - "4200:80"
+
+    depends_on:
+      - gateway
+
+    networks:
+      - neo4flix-network
+  
   neo4j:
     image: docker.io/library/neo4j:5
     container_name: neo4flix-neo4j
