@@ -50,13 +50,13 @@ public class AuthService {
             );
         }
 
-        if (userRepository.existsByUsername(
-                request.getUsername())) {
+        // if (userRepository.existsByUsername(
+        //         request.getUsername())) {
 
-            throw new IllegalArgumentException(
-                    "Username already exists"
-            );
-        }
+        //     throw new IllegalArgumentException(
+        //             "Username already exists"
+        //     );
+        // }
 
         if (userRepository.existsByEmail(
                 request.getEmail())) {

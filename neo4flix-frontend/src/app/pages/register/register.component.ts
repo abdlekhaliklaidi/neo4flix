@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
@@ -7,253 +7,132 @@ import { AuthService } from '../../core/auth.service';
   selector: 'app-register',
   standalone: true,
   imports: [FormsModule, RouterLink],
-
-  template: `
-    <div class="auth-page">
-
-      <div class="auth-box">
-
-        <h1>Neo4flix</h1>
-
-        <p class="subtitle">
-          Create your account
-        </p>
-
-        <form (ngSubmit)="submit()">
-
-          <input
-            [(ngModel)]="username"
-            name="username"
-            type="text"
-            placeholder="Username"
-            autocomplete="username"
-            required
-          />
-
-          <input
-            [(ngModel)]="email"
-            name="email"
-            type="email"
-            placeholder="Email"
-            autocomplete="email"
-            required
-          />
-
-          <input
-            [(ngModel)]="password"
-            name="password"
-            type="password"
-            placeholder="Password"
-            autocomplete="new-password"
-            required
-          />
-
-          <button
-            type="submit"
-            [disabled]="loading"
-          >
-            {{ loading ? 'Creating account...' : 'Register' }}
-          </button>
-
-        </form>
-
-        @if (error) {
-          <p class="error">
-            {{ error }}
-          </p>
-        }
-
-        <p class="login-text">
-          Already have an account?
-          <a routerLink="/login">Login</a>
-        </p>
-
-      </div>
-
-    </div>
-  `,
-
-  styles: [`
-    .auth-page {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background:
-        linear-gradient(
-          rgba(0, 0, 0, .75),
-          rgba(0, 0, 0, .9)
-        ),
-        #0b0b0b;
-
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    .auth-box {
-      width: 360px;
-      max-width: 100%;
-      padding: 40px;
-      background: #181818;
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, .6);
-      text-align: center;
-    }
-
-    h1 {
-      color: #e50914;
-      margin: 0 0 8px;
-      font-size: 36px;
-      font-weight: 800;
-    }
-
-    .subtitle {
-      color: #aaa;
-      margin: 0 0 30px;
-      font-size: 14px;
-    }
-
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 14px;
-      margin-bottom: 15px;
-      border: 1px solid #333;
-      border-radius: 6px;
-      background: #333;
-      color: white;
-      font-size: 15px;
-    }
-
-    input::placeholder {
-      color: #999;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #e50914;
-      box-shadow: 0 0 0 1px #e50914;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 5px;
-      border: none;
-      border-radius: 6px;
-      background: #e50914;
-      color: white;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background .2s;
-    }
-
-    button:hover:not(:disabled) {
-      background: #f40612;
-    }
-
-    button:disabled {
-      background: #6b080d;
-      cursor: not-allowed;
-    }
-
-    .error {
-      color: #ff6b6b;
-      background: rgba(255, 107, 107, .08);
-      border-radius: 6px;
-      padding: 10px;
-      margin: 15px 0 0;
-      font-size: 14px;
-    }
-
-    .login-text {
-      color: #999;
-      margin-top: 25px;
-      font-size: 14px;
-    }
-
-    a {
-      color: white;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    a:hover {
-      color: #e50914;
-    }
-  `]
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.css'
 })
 export class RegisterComponent {
 
   username = '';
   email = '';
   password = '';
-
   error = '';
   loading = false;
 
   constructor(
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   submit() {
 
-    this.error = '';
+  this.error = '';
 
-    if (
-      !this.username.trim() ||
-      !this.email.trim() ||
-      !this.password
-    ) {
-      this.error = 'All fields are required.';
-      return;
-    }
+  const username = this.username.trim();
+  const email = this.email.trim();
+  const password = this.password;
 
-    this.loading = true;
+  
+  if (!username || !email || !password) {
 
-    this.auth.register(
-      this.username.trim(),
-      this.email.trim(),
-      this.password
-    ).subscribe({
+    this.error = 'All fields are required.';
+    return;
+  }
 
-      next: () => {
+  // Username validation
+  const usernameRegex = /^[a-zA-Z0-9_-]+$/;
 
-        this.loading = false;
+  if (!usernameRegex.test(username)) {
 
+    this.error =
+      'Username can only contain letters, numbers, _ and - .';
 
-        this.router.navigate(['/login']);
-      },
+    return;
+  }
 
-      error: (e) => {
+  // Password validation
+  if (password.length < 8) {
 
-        this.loading = false;
+    this.error =
+      'Password must contain at least 8 characters.';
 
-        console.error(
-          'REGISTER HTTP ERROR:',
-          e
-        );
+    return;
+  }
 
-        if (e.status === 400) {
+  // Email validation
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-          this.error =
-            typeof e.error === 'string'
-              ? e.error
-              : 'Invalid registration data.';
+  if (!emailRegex.test(email)) {
 
-        } else if (e.status === 0) {
+    this.error =
+      'Please enter a valid email address.';
 
-          this.error =
-            'Cannot connect to the server.';
+    return;
+  }
+
+  this.loading = true;
+
+  this.auth.register(username, email, password).subscribe({
+
+    next: () => {
+
+      this.loading = false;
+
+      this.cdr.detectChanges();
+
+      this.router.navigate(['/login']);
+
+    },
+
+    error: (e) => {
+
+      this.loading = false;
+
+      console.error(
+        'REGISTER HTTP ERROR:',
+        e
+      );
+
+      if (e.status === 400) {
+
+        const backendMessage =
+          typeof e.error === 'string'
+            ? e.error
+            : e.error?.message;
+
+        if (backendMessage) {
+
+          this.error = backendMessage;
 
         } else {
 
-          this.error =
-            'Registration failed. Please try again.';
+          this.error = 'Invalid registration data.';
         }
+
       }
-    });
-  }
+
+      else if (e.status === 409) {
+
+       this.error = typeof e.error === 'string'
+      ? e.error
+      : 'Email or username is already registered.';
+      }
+
+      else if (e.status === 0) {
+
+        this.error = 'Cannot connect to the server.';
+
+      }
+
+      else {
+
+        this.error = 'Registration failed. Please try again.';
+      }
+
+      this.cdr.detectChanges();
+    }
+
+  });
+}
 }

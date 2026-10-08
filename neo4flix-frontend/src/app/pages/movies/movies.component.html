@@ -1,1 +1,283 @@
-<p>movies works!</p>
+<div class="movies-page">
+
+      <!-- NAVBAR -->
+
+      
+      <header class="navbar">
+
+        <div class="logo">
+          Neo4flix
+        </div>
+
+        <div class="user-section">
+
+        <button class="ratings-btn"
+         type="button"
+         (click)="goToRatings()"
+        >
+         Ratings
+        </button>
+
+          <div class="user-info">
+
+            <strong>
+              {{ auth.user()?.username }}
+            </strong>
+
+            <span>
+              {{ auth.user()?.role }}
+            </span>
+
+          </div>
+          
+
+          <button
+            class="logout-btn"
+            type="button"
+            (click)="logout()"
+          >
+            Logout
+          </button>
+
+        </div>
+
+      </header>
+
+
+      <!-- MAIN -->
+
+      <main class="content">
+
+        <section class="hero">
+
+          <h1>
+            Movies
+          </h1>
+
+          <p>
+            Search, explore and rate your favorite movies.
+          </p>
+
+        </section>
+
+
+        <!-- SEARCH -->
+
+        <section class="search-box">
+
+          <select
+            [(ngModel)]="mode"
+          >
+
+            <option value="title">
+              Title
+            </option>
+
+            <option value="genre">
+              Genre
+            </option>
+
+            <option value="year">
+              Year
+            </option>
+
+          </select>
+
+
+          <input
+            [(ngModel)]="query"
+            placeholder="Search movies..."
+            (keyup.enter)="search()"
+          />
+
+
+          <button
+            class="search-btn"
+            type="button"
+            (click)="search()"
+          >
+            Search
+          </button>
+
+
+          <button
+            class="reset-btn"
+            type="button"
+            (click)="load()"
+          >
+            Reset
+          </button>
+
+        </section>
+
+
+        <!-- MESSAGE -->
+
+        @if (msg) {
+
+          <div class="message">
+
+            {{ msg }}
+
+          </div>
+
+        }
+
+
+        <!-- LOADING -->
+
+        @if (loading) {
+
+          <div class="loading">
+
+            Loading movies...
+
+          </div>
+
+        }
+
+
+        <!-- MOVIES -->
+
+        @if (!loading) {
+
+          <section class="movies-grid">
+
+            @for (
+              movie of movies;
+              track movie.id
+            ) {
+
+              <article class="movie-card">
+
+                <div class="movie-top">
+
+                  <div>
+
+                    <h2>
+                      {{ movie.title }}
+                    </h2>
+
+                    <span class="year">
+                      {{ movie.releaseYear }}
+                    </span>
+
+                  </div>
+
+                  <div class="rating">
+
+                    ⭐
+
+                    {{
+                      movie.averageRating
+                      ?? 'N/A'
+                    }}
+
+                  </div>
+
+                </div>
+
+
+                <!-- GENRES -->
+
+                <div class="genres">
+
+                  @for (
+                    genre of movie.genres;
+                    track genre.name
+                  ) {
+
+                    <span class="genre">
+                      {{ genre.name }}
+                    </span>
+
+                  }
+
+                </div>
+
+
+                <!-- DESCRIPTION -->
+
+                <p class="description">
+
+                  {{ movie.description }}
+
+                </p>
+
+
+                <!-- ACTIONS -->
+
+                <div class="actions">
+
+                  <button
+                    type="button"
+                    class="details-btn"
+                    (click)="details(movie.id)"
+                  >
+                    View Details
+                  </button>
+
+                </div>
+
+
+                <!-- RATE -->
+
+                <div class="rate-section">
+
+                  <span>
+                    Rate this movie
+                  </span>
+
+                  <div class="rating-buttons">
+
+                    @for (
+                      score of scores;
+                      track score
+                    ) {
+
+                      <button
+                        type="button"
+                        (click)="rate(movie, score)"
+                      >
+                        {{ score }}★
+                      </button>
+
+                    }
+
+                  </div>
+
+                </div>
+
+              </article>
+
+            }
+
+          </section>
+
+        }
+
+
+        <!-- EMPTY -->
+
+        @if (
+          !loading &&
+          movies.length === 0
+        ) {
+
+          <div class="empty">
+
+            <h2>
+              No movies found
+            </h2>
+
+            <p>
+              Try another title, genre or year.
+            </p>
+
+          </div>
+
+        }
+
+      </main>
+
+    </div>

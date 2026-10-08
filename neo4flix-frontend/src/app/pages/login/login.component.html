@@ -1,1 +1,53 @@
-<p>login works!</p>
+<div class="auth-page">
+
+      <div class="auth-box">
+
+        <h1>Neo4flix</h1>
+
+        <p class="subtitle">
+          Sign in to continue watching
+        </p>
+
+        <form (ngSubmit)="submit()">
+
+          <input
+            [(ngModel)]="username"
+            name="username"
+            type="text"
+            placeholder="Username"
+            autocomplete="username"
+            required
+          />
+
+          <input
+            [(ngModel)]="password"
+            name="password"
+            type="password"
+            placeholder="Password"
+            autocomplete="current-password"
+            required
+          />
+
+          <button
+            type="submit"
+            [disabled]="loading"
+          >
+            {{ loading ? 'Logging in...' : 'Login' }}
+          </button>
+
+        </form>
+
+        @if (error) {
+          <p class="error">
+            {{ error }}
+          </p>
+        }
+
+        <p class="register-text">
+          Don't have an account?
+          <a routerLink="/register">Create account</a>
+        </p>
+
+      </div>
+
+    </div>

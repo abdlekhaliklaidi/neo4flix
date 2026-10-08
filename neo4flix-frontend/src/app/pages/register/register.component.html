@@ -1,1 +1,62 @@
-<p>register works!</p>
+<div class="auth-page">
+
+      <div class="auth-box">
+
+        <h1>Neo4flix</h1>
+
+        <p class="subtitle">
+          Create your account
+        </p>
+
+        <form (ngSubmit)="submit()">
+
+          <input
+            [(ngModel)]="username"
+            name="username"
+            type="text"
+            placeholder="Username"
+            autocomplete="username"
+            required
+          />
+
+          <input
+            [(ngModel)]="email"
+            name="email"
+            type="email"
+            placeholder="Email"
+            autocomplete="email"
+            required
+          />
+
+          <input
+            [(ngModel)]="password"
+            name="password"
+            type="password"
+            placeholder="Password"
+            autocomplete="new-password"
+            required
+          />
+
+          <button
+            type="submit"
+            [disabled]="loading"
+          >
+            {{ loading ? 'Creating account...' : 'Register' }}
+          </button>
+
+        </form>
+        
+        @if (error) {
+          <p class="error">
+            {{ error }}
+          </p>
+        }
+
+        <p class="login-text">
+          Already have an account?
+          <a routerLink="/login">Login</a>
+        </p>
+
+      </div>
+
+    </div>

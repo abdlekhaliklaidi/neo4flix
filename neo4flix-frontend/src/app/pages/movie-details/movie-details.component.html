@@ -1,0 +1,164 @@
+<div class="details-page">
+
+      <header class="navbar">
+
+        <button
+          class="back-btn"
+          type="button"
+          (click)="back()"
+        >
+          ← Back
+        </button>
+
+        <button
+          class="logo"
+          type="button"
+          routerLink="/movies"
+        >
+          Neo4flix
+        </button>
+
+        <button
+          class="logout-btn"
+          type="button"
+          (click)="logout()"
+        >
+          Logout
+        </button>
+
+      </header>
+
+      @if (loading) {
+
+        <div class="loading">
+          Loading movie...
+        </div>
+
+      }
+
+
+      @if (!loading && movie) {
+
+        <main class="movie-details">
+
+          <div class="poster-placeholder">
+
+            <span>
+              🎬
+            </span>
+
+          </div>
+
+
+          <div class="info">
+
+            <h1>
+              {{ movie.title }}
+            </h1>
+
+            <div class="meta">
+
+              <span>
+                {{ movie.releaseYear }}
+              </span>
+
+              <span>
+                ⭐
+                {{ movie.averageRating ?? 'N/A' }}
+              </span>
+
+            </div>
+
+
+            <div class="genres">
+
+              @for (
+                genre of movie.genres;
+                track genre.name
+              ) {
+
+                <span>
+                  {{ genre.name }}
+                </span>
+
+              }
+
+            </div>
+
+
+            <p class="description">
+              {{ movie.description }}
+            </p>
+
+
+            <div class="rating-box">
+
+              <h3>
+                Rate this movie
+              </h3>
+
+              <div class="rating-buttons">
+
+                @for (
+                  score of scores;
+                  track score
+                ) {
+
+                  <button
+                    type="button"
+                    (click)="rate(score)"
+                  >
+                    {{ score }}★
+                  </button>
+
+                }
+
+              </div>
+
+            </div>
+
+
+            @if (msg) {
+
+              <div class="message">
+                {{ msg }}
+              </div>
+
+            }
+
+          </div>
+
+        </main>
+
+      }
+      
+      @if (!loading && msg && !movie) {
+
+  <div class="error-message">
+
+    {{ msg }}
+
+  </div>
+
+}
+
+      @if (!loading && !movie) {
+
+        <div class="empty">
+
+          <h2>
+            Movie not found
+          </h2>
+
+          <button
+            type="button"
+            (click)="back()"
+          >
+            Back to movies
+          </button>
+
+        </div>
+
+      }
+
+    </div>

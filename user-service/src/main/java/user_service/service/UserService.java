@@ -27,13 +27,13 @@ public class UserService {
 
     public User createUser(User user) {
 
-        if (userRepository.existsByUsername(
-                user.getUsername())) {
+        // if (userRepository.existsByUsername(
+        //         user.getUsername())) {
 
-            throw new RuntimeException(
-                    "Username already exists"
-            );
-        }
+        //     throw new RuntimeException(
+        //             "Username already exists"
+        //     );
+        // }
 
         if (userRepository.existsByEmail(
                 user.getEmail())) {
