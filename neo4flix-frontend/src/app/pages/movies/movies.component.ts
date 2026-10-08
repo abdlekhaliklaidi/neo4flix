@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -33,6 +33,13 @@ import {
 
         <div class="user-section">
 
+        <button class="ratings-btn"
+         type="button"
+         (click)="goToRatings()"
+        >
+         Ratings
+        </button>
+
           <div class="user-info">
 
             <strong>
@@ -44,6 +51,7 @@ import {
             </span>
 
           </div>
+          
 
           <button
             class="logout-btn"
@@ -577,21 +585,14 @@ import {
     /* MESSAGE */
 
     .message {
-
-      padding: 12px 16px;
-
-      margin-bottom: 25px;
-
-      border-radius: 7px;
-
-      background: #241313;
-
-      border:
-        1px solid #542020;
-
-      color: #ff7777;
-
-    }
+  padding: 12px 16px;
+  margin-bottom: 25px;
+  border-radius: 7px;
+  background: #10281c;
+  border: 1px solid #1f6b43;
+  color: #6ee7a0;
+  font-weight: 600;
+}
 
 
     /* LOADING */
@@ -820,7 +821,14 @@ import {
       margin-top: 10px;
 
     }
-
+    
+    .ratings-btn {
+      background: #e50914;
+      border-color: #e50914;
+      color: white;
+      padding: 7px 15px;
+      border-radius: 5px;
+    }
 
     .rating-buttons button {
 
@@ -960,7 +968,8 @@ export class MoviesComponent
   constructor(
     private api: ApiService,
     public auth: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
 
@@ -987,6 +996,11 @@ export class MoviesComponent
 
         this.loading = false;
 
+        this.cdr.detectChanges();
+
+      console.log('MOVIES:', this.movies);
+      console.log('LOADING:', this.loading);
+
       },
 
       error: error => {
@@ -994,6 +1008,9 @@ export class MoviesComponent
         this.loading = false;
 
         this.handleError(error);
+
+
+        this.cdr.detectChanges();
 
       }
 
@@ -1019,6 +1036,8 @@ export class MoviesComponent
     this.loading = true;
 
     this.msg = '';
+
+    this.cdr.detectChanges();
 
 
     let request;
@@ -1064,6 +1083,8 @@ export class MoviesComponent
 
         this.loading = false;
 
+        this.cdr.detectChanges();
+
       },
 
       error: error => {
@@ -1071,6 +1092,8 @@ export class MoviesComponent
         this.loading = false;
 
         this.handleError(error);
+
+        this.cdr.detectChanges();
 
       }
 
@@ -1089,44 +1112,48 @@ export class MoviesComponent
   }
 
 
-  rate(
-    movie: Movie,
-    score: number
-  ) {
+  rate(movie: Movie, score: number): void {
 
-    this.msg = '';
+  this.msg = 'You rated "' + movie.title + '" successfully.';
+  setTimeout(() => {
 
-    this.api
-      .rate(movie.id, score)
-      .subscribe({
+        this.msg = '';
 
-        next: () => {
+        this.cdr.detectChanges();
 
-          this.msg =
-            `You rated "${movie.title}" ${score}/5`;
+      }, 2000);
 
-        },
+  this.api.rate(movie.id, score).subscribe({
 
-        error: error => {
+    next: () => {
 
-          if (error.status === 401) {
+      this.cdr.detectChanges();
 
-            this.auth.logout();
+      this.msg =
+        `✅ You rated "${movie.title}" ${score}/5 successfully.`;
 
-            return;
+    },
 
-          }
+    error: error => {
 
-          this.msg =
-            typeof error.error === 'string'
-              ? error.error
-              : 'Unable to rate this movie.';
+      if (error.status === 401) {
 
-        }
+        this.auth.logout();
+        return;
 
-      });
+      }
+      this.cdr.detectChanges();
 
-  }
+      this.msg =
+        typeof error.error === 'string'
+          ? error.error
+          : '❌ Unable to save your rating.';
+
+    }
+
+  });
+
+}
 
 
   logout() {
@@ -1134,7 +1161,12 @@ export class MoviesComponent
     this.auth.logout();
 
   }
+  
+  goToRatings(): void {
 
+  this.router.navigate(['/ratings']);
+
+}
 
   private handleError(error: any) {
 

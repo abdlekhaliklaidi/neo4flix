@@ -1,12 +1,32 @@
 <div class="ratings-page">
   
-  <button
+  <header class="navbar">
+
+        <button
           class="back-btn"
           type="button"
           (click)="back()"
         >
           ← Back
-  </button>
+        </button>
+
+        <button
+          type="button"
+          class="logo"
+          routerLink="/movies"
+        >
+          Neo4flix
+        </button>
+
+        <button
+          class="logout-btn"
+          type="button"
+          (click)="logout()"
+        >
+          Logout
+        </button>
+
+  </header>
 
   <header class="ratings-header">
     <h1>Ratings</h1>

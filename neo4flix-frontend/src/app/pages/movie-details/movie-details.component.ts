@@ -1,7 +1,7 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID,  ChangeDetectorRef, } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 
 import {ApiService,Movie} from '../../core/api.service';
 
@@ -10,6 +10,8 @@ import {AuthService} from '../../core/auth.service';
 @Component({
   selector: 'app-movie-details',
   standalone: true,
+
+  imports: [RouterLink],
 
   template: `
 
@@ -25,9 +27,13 @@ import {AuthService} from '../../core/auth.service';
           ← Back
         </button>
 
-        <div class="logo">
+        <button
+          class="logo"
+          type="button"
+          routerLink="/movies"
+        >
           Neo4flix
-        </div>
+        </button>
 
         <button
           class="logout-btn"
@@ -449,12 +455,14 @@ import {AuthService} from '../../core/auth.service';
     }
 
     .message {
-
-      margin-top: 20px;
-
-      color: #6ee7a0;
-
-    }
+  margin-top: 20px;
+  padding: 13px 16px;
+  border-radius: 8px;
+  background: #10281c;
+  border: 1px solid #1f6b43;
+  color: #6ee7a0;
+  font-weight: 600;
+}
 
 
     .loading,
@@ -531,15 +539,16 @@ export class MovieDetailsComponent implements OnInit {
   private router: Router,
   private api: ApiService,
   private auth: AuthService,
+  private cdr: ChangeDetectorRef,
   @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
 
  ngOnInit() {
 
-  if (!isPlatformBrowser(this.platformId)) {
-    return;
-  }
+  // if (!isPlatformBrowser(this.platformId)) {
+  //   return;
+  // }
 
   const id = Number(
     this.route.snapshot.paramMap.get('id')
@@ -567,6 +576,8 @@ export class MovieDetailsComponent implements OnInit {
       this.movie = movie;
       this.loading = false;
 
+      this.cdr.detectChanges();
+
       console.log(
         'AFTER SETTING MOVIE:',
         this.movie
@@ -587,6 +598,8 @@ export class MovieDetailsComponent implements OnInit {
 
       this.loading = false;
       this.movie = null;
+
+      this.cdr.detectChanges();
 
       if (error.status === 401) {
 
@@ -616,47 +629,52 @@ export class MovieDetailsComponent implements OnInit {
 }
 
 
-  rate(score: number) {
+rate(score: number): void {
 
-    if (!this.movie) {
-      return;
+  if (!this.movie) {
+    return;
+  }
+
+  const movieTitle = this.movie.title;
+
+  this.msg = 'You rated "' + this.movie.title + '" successfully.';
+  setTimeout(() => {
+
+        this.msg = '';
+
+        this.cdr.detectChanges();
+
+      }, 2000);
+
+  this.api.rate(this.movie.id, score).subscribe({
+
+    next: () => {
+      this.cdr.detectChanges();
+      this.msg =
+        `✅ You rated "${movieTitle}" ${score}/5 successfully.`;
+
+    },
+
+    error: error => {
+
+      if (error.status === 401) {
+
+        this.auth.logout();
+        return;
+
+      }
+      this.cdr.detectChanges();
+      
+      this.msg =
+        typeof error.error === 'string'
+          ? error.error
+          : '❌ Unable to save your rating.';
+
     }
 
+  });
 
-    this.api
-      .rate(
-        this.movie.id,
-        score
-      )
-      .subscribe({
-
-        next: () => {
-
-          this.msg =
-            `You rated "${this.movie?.title}" ${score}/5`;
-
-        },
-
-        error: error => {
-
-          if (error.status === 401) {
-
-            this.auth.logout();
-
-            return;
-
-          }
-
-          this.msg =
-            typeof error.error === 'string'
-              ? error.error
-              : 'Unable to rate movie.';
-
-        }
-
-      });
-
-  }
+}
 
 
   back() {

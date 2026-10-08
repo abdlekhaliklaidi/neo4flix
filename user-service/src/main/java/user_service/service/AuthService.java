@@ -81,12 +81,15 @@ public class AuthService {
 
         user.setRole("USER");
 
-        Long nextId =
-        userRepository.findMaxUserId() + 1;
+        Long nextId = userRepository.findMaxUserId() + 1;
+
+        System.out.println("MAX USER ID = " + nextId);
 
         user.setId(nextId);
 
         User savedUser = userRepository.save(user);
+
+        System.out.println("SAVED USER = " + savedUser.getUsername() + " / ID = " + savedUser.getId());
 
 
         String token = jwtService.generateToken(savedUser);

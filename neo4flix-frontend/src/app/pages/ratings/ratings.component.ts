@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { ApiService, Rating } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
@@ -8,7 +8,7 @@ import { AuthService } from '../../core/auth.service';
 @Component({
   selector: 'app-ratings',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './ratings.component.html',
   styleUrl: './ratings.component.css'
 })
@@ -24,7 +24,8 @@ export class Ratings implements OnInit {
   constructor(
     private api: ApiService,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -50,6 +51,11 @@ export class Ratings implements OnInit {
 
         console.log('FORMATTED RATINGS:', this.ratings);
         this.loading = false;
+
+        this.cdr.detectChanges();
+
+        console.log('FORMATTED RATINGS:', this.ratings);
+        console.log('LOADING:', this.loading);
       },
 
       error: (error) => {
@@ -64,6 +70,7 @@ export class Ratings implements OnInit {
         }
 
         this.msg = 'Unable to load your ratings.';
+        this.cdr.detectChanges();
       }
 
     });
@@ -94,6 +101,14 @@ export class Ratings implements OnInit {
         this.deletingMovieId = null;
 
         this.msg = 'Rating deleted successfully.';
+        setTimeout(() => {
+
+        this.msg = '';
+
+        this.cdr.detectChanges();
+
+      }, 2000);
+        this.cdr.detectChanges();
       },
 
       error: (error) => {
@@ -108,6 +123,7 @@ export class Ratings implements OnInit {
         }
 
         this.msg = 'Unable to delete rating.';
+        this.cdr.detectChanges();
       }
 
     });
@@ -116,5 +132,9 @@ export class Ratings implements OnInit {
 
   back(): void {
     this.router.navigate(['/movies']);
+  }
+
+  logout(): void {
+    this.auth.logout();
   }
 }

@@ -100,7 +100,36 @@
   color: #6ee7a0;
 }
 
-.back-btn,
+ .navbar {
+
+      height: 70px;
+
+      padding: 0 30px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      background: #141414;
+
+      border-bottom: 1px solid #292929;
+
+    }
+
+    
+    .logo {
+
+      color: #e50914;
+
+      font-size: 26px;
+
+      font-weight: 900;
+
+    }
+
+    .back-btn,
     .logout-btn {
 
       padding: 9px 15px;
@@ -113,11 +142,22 @@
 
     }
 
+    
     .back-btn {
 
       border: 1px solid #444;
 
       background: transparent;
+
+      color: white;
+
+    }
+
+    .logout-btn {
+
+      border: 1px solid #e50914;
+
+      background: #e50914;
 
       color: white;
 
