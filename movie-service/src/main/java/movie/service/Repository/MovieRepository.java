@@ -8,14 +8,34 @@ import java.util.List;
 
 public interface MovieRepository extends Neo4jRepository<Movie, Long> {
 
-    List<Movie> findByTitleContainingIgnoreCase(String title);
-
-    List<Movie> findByReleaseYear(Integer releaseYear);
+    @Query("""
+        MATCH (m:Movie)
+        WHERE toLower(m.title) CONTAINS toLower($title)
+        OPTIONAL MATCH (m)-[:IN_GENRE]->(g:Genre)
+        RETURN m, collect(g)
+        """)
+    List<Movie> searchByTitle(String title);
 
     @Query("""
         MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
         WHERE toLower(g.name) = toLower($genre)
-        RETURN m
+        OPTIONAL MATCH (m)-[:IN_GENRE]->(allGenres:Genre)
+        RETURN m, collect(allGenres)
         """)
     List<Movie> findByGenre(String genre);
+
+    @Query("""
+        MATCH (m:Movie)
+        OPTIONAL MATCH (m)-[:IN_GENRE]->(g:Genre)
+        RETURN m, collect(g)
+        """)
+    List<Movie> findAllWithGenres();
+
+    @Query("""
+        MATCH (m:Movie)
+        WHERE m.id = $id
+        OPTIONAL MATCH (m)-[:IN_GENRE]->(g:Genre)
+        RETURN m, collect(g)
+        """)
+    Movie findMovieWithGenres(Long id);
 }

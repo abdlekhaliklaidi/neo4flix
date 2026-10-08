@@ -17,14 +17,41 @@ public class MovieService {
     }
 
     public List<Movie> getAllMovies() {
-        return movieRepository.findAll();
+        return movieRepository.findAllWithGenres();
     }
 
     public Optional<Movie> getMovieById(Long id) {
-        return movieRepository.findById(id);
+
+        if (id == null) {
+            return Optional.empty();
+        }
+
+        Movie movie = movieRepository.findMovieWithGenres(id);
+
+        return Optional.ofNullable(movie);
     }
 
     public Movie createMovie(Movie movie) {
+
+        if (movie.getTitle() == null ||
+                movie.getTitle().trim().isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Movie title is required"
+            );
+        }
+
+        if (movie.getReleaseYear() == null) {
+
+            throw new IllegalArgumentException(
+                    "Release year is required"
+            );
+        }
+
+        if (movie.getAverageRating() == null) {
+            movie.setAverageRating(0.0);
+        }
+
         return movieRepository.save(movie);
     }
 
@@ -33,33 +60,79 @@ public class MovieService {
         return movieRepository.findById(id)
                 .map(existingMovie -> {
 
-                    existingMovie.setTitle(movie.getTitle());
-                    existingMovie.setReleaseYear(movie.getReleaseYear());
-                    existingMovie.setDescription(movie.getDescription());
-                    existingMovie.setAverageRating(movie.getAverageRating());
-                    existingMovie.setGenres(movie.getGenres());
+                    existingMovie.setTitle(
+                            movie.getTitle()
+                    );
 
-                    return movieRepository.save(existingMovie);
+                    existingMovie.setReleaseYear(
+                            movie.getReleaseYear()
+                    );
+
+                    existingMovie.setDescription(
+                            movie.getDescription()
+                    );
+
+                    existingMovie.setAverageRating(
+                            movie.getAverageRating()
+                    );
+
+                    existingMovie.setGenres(
+                            movie.getGenres()
+                    );
+
+                    return movieRepository.save(
+                            existingMovie
+                    );
                 })
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Movie not found with id: " + id
-                        ));
+                        )
+                );
     }
 
     public void deleteMovie(Long id) {
+
+        if (!movieRepository.existsById(id)) {
+
+            throw new RuntimeException(
+                    "Movie not found with id: " + id
+            );
+        }
+
         movieRepository.deleteById(id);
     }
 
     public List<Movie> searchByTitle(String title) {
-        return movieRepository.findByTitleContainingIgnoreCase(title);
+
+        if (title == null || title.isBlank()) {
+            return List.of();
+        }
+
+        return movieRepository.searchByTitle(
+                title.trim()
+        );
     }
 
     public List<Movie> searchByGenre(String genre) {
-        return movieRepository.findByGenre(genre);
+
+        if (genre == null || genre.isBlank()) {
+            return List.of();
+        }
+
+        return movieRepository.findByGenre(
+                genre.trim()
+        );
     }
 
     public List<Movie> searchByYear(Integer year) {
-        return movieRepository.findByReleaseYear(year);
+
+        return movieRepository.findAllWithGenres()
+                .stream()
+                .filter(movie ->
+                        movie.getReleaseYear() != null &&
+                        movie.getReleaseYear().equals(year)
+                )
+                .toList();
     }
 }

@@ -14,8 +14,11 @@ public class Movie {
     private Long id;
 
     private String title;
+
     private Integer releaseYear;
+
     private String description;
+
     private Double averageRating;
 
     @Relationship(type = "IN_GENRE")
@@ -24,11 +27,13 @@ public class Movie {
     public Movie() {
     }
 
-    public Movie(Long id,
-                 String title,
-                 Integer releaseYear,
-                 String description,
-                 Double averageRating) {
+    public Movie(
+            Long id,
+            String title,
+            Integer releaseYear,
+            String description,
+            Double averageRating
+    ) {
         this.id = id;
         this.title = title;
         this.releaseYear = releaseYear;

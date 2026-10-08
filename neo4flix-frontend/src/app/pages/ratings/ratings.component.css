@@ -1,0 +1,142 @@
+* {
+  box-sizing: border-box;
+}
+
+.ratings-page {
+  min-height: 100vh;
+  padding: 40px 25px;
+  background:
+    radial-gradient(
+      circle at top,
+      #242424,
+      #080808 60%
+    );
+  color: white;
+}
+
+.ratings-header {
+  max-width: 1000px;
+  margin: 0 auto 35px;
+}
+
+.ratings-header h1 {
+  margin: 0;
+  font-size: 36px;
+  color: #e50914;
+}
+
+.loading,
+.empty {
+  max-width: 1000px;
+  margin: 80px auto;
+  text-align: center;
+  color: #888;
+}
+
+.empty h2 {
+  color: white;
+}
+
+.ratings-list {
+  max-width: 1000px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.rating-card {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  padding: 22px;
+  background: #151515;
+  border: 1px solid #292929;
+  border-radius: 10px;
+}
+
+.movie-info {
+  flex: 1;
+}
+
+.movie-info h2 {
+  margin: 0 0 7px;
+  font-size: 21px;
+}
+
+.movie-info p {
+  margin: 0;
+  color: #777;
+  font-size: 13px;
+}
+
+.rating-score {
+  color: #f5c518;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.delete-btn {
+  border: 1px solid #e50914;
+  background: transparent;
+  color: #e50914;
+  padding: 9px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.delete-btn:hover {
+  background: #e50914;
+  color: white;
+}
+
+.message {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 12px;
+  border-radius: 6px;
+  background: #16251b;
+  color: #6ee7a0;
+}
+
+.back-btn,
+    .logout-btn {
+
+      padding: 9px 15px;
+
+      border-radius: 6px;
+
+      cursor: pointer;
+
+      font-weight: 600;
+
+    }
+
+    .back-btn {
+
+      border: 1px solid #444;
+
+      background: transparent;
+
+      color: white;
+
+    }
+
+@media (max-width: 700px) {
+
+  .rating-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .rating-score {
+    order: 2;
+  }
+
+  .delete-btn {
+    order: 3;
+  }
+
+
+}

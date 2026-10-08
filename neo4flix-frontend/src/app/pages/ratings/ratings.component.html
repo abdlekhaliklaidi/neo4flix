@@ -1,1 +1,103 @@
-<p>ratings works!</p>
+<div class="ratings-page">
+  
+  <button
+          class="back-btn"
+          type="button"
+          (click)="back()"
+        >
+          ← Back
+  </button>
+
+  <header class="ratings-header">
+    <h1>Ratings</h1>
+    <p>Movies you have rated</p>
+  </header>
+
+  @if (loading) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading your ratings...</p>
+    </div>
+  }
+
+  @if (!loading && msg) {
+    <div class="message">
+      {{ msg }}
+    </div>
+  }
+
+  @if (!loading && ratings.length === 0 && !msg) {
+    <div class="empty">
+      <div class="empty-icon">⭐</div>
+
+      <h2>No ratings yet</h2>
+
+      <p>
+        Rate some movies and they will appear here.
+      </p>
+
+      <!-- <button
+        type="button"
+        class="back-btn"
+        (click)="back()"
+      >
+        Back to movies
+      </button> -->
+    </div>
+  }
+
+  @if (!loading && ratings.length > 0) {
+
+    <div class="ratings-list">
+
+      @for (rating of ratings; track rating.movieId) {
+
+        <div class="rating-card">
+
+          <div class="movie-info">
+
+            <h2>
+              {{ rating.title || ('Movie #' + rating.movieId) }}
+            </h2>
+
+            <p>
+              Movie ID: {{ rating.movieId }}
+            </p>
+
+          </div>
+
+          <div class="rating-score">
+            <span class="star">⭐</span>
+            <span>{{ rating.score }}/5</span>
+          </div>
+
+          <button
+            type="button"
+            class="delete-btn"
+            (click)="deleteRating(rating.movieId)"
+            [disabled]="deletingMovieId === rating.movieId"
+          >
+            @if (deletingMovieId === rating.movieId) {
+              Deleting...
+            } @else {
+              Delete
+            }
+          </button>
+
+        </div>
+
+      }
+
+      <!-- <button
+        type="button"
+        class="back-btn list-back-btn"
+        (click)="back()"
+      >
+        Back to movies
+      </button> -->
+
+    </div>
+
+  }
+
+</div>

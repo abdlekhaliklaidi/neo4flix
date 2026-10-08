@@ -1,33 +1,48 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Movie } from '../../core/api.service';
-import { AuthService } from '../../core/auth.service';
+import { Router } from '@angular/router';
+
+import {
+  ApiService,
+  Movie
+} from '../../core/api.service';
+
+import {
+  AuthService
+} from '../../core/auth.service';
 
 @Component({
   selector: 'app-movies',
   standalone: true,
-  imports: [FormsModule],
+  imports: [
+    FormsModule
+  ],
 
   template: `
+
     <div class="movies-page">
 
       <!-- NAVBAR -->
+
+      
       <header class="navbar">
 
-        <div class="brand">
-          <span class="logo">Neo4flix</span>
+        <div class="logo">
+          Neo4flix
         </div>
 
         <div class="user-section">
 
           <div class="user-info">
-            <span class="username">
-              {{ auth.user()?.username }}
-            </span>
 
-            <span class="role">
+            <strong>
+              {{ auth.user()?.username }}
+            </strong>
+
+            <span>
               {{ auth.user()?.role }}
             </span>
+
           </div>
 
           <button
@@ -43,29 +58,52 @@ import { AuthService } from '../../core/auth.service';
       </header>
 
 
-      <!-- CONTENT -->
+      <!-- MAIN -->
+
       <main class="content">
 
-        <div class="page-title">
-          <h1>Movies</h1>
-          <p>Discover and rate your favorite movies.</p>
-        </div>
+        <section class="hero">
+
+          <h1>
+            Movies
+          </h1>
+
+          <p>
+            Search, explore and rate your favorite movies.
+          </p>
+
+        </section>
 
 
         <!-- SEARCH -->
-        <div class="toolbar">
 
-          <select [(ngModel)]="mode">
-            <option value="title">Title</option>
-            <option value="genre">Genre</option>
-            <option value="year">Year</option>
+        <section class="search-box">
+
+          <select
+            [(ngModel)]="mode"
+          >
+
+            <option value="title">
+              Title
+            </option>
+
+            <option value="genre">
+              Genre
+            </option>
+
+            <option value="year">
+              Year
+            </option>
+
           </select>
+
 
           <input
             [(ngModel)]="query"
-            placeholder="Search..."
+            placeholder="Search movies..."
             (keyup.enter)="search()"
           />
+
 
           <button
             class="search-btn"
@@ -75,6 +113,7 @@ import { AuthService } from '../../core/auth.service';
             Search
           </button>
 
+
           <button
             class="reset-btn"
             type="button"
@@ -83,82 +122,172 @@ import { AuthService } from '../../core/auth.service';
             Reset
           </button>
 
-        </div>
+        </section>
 
 
         <!-- MESSAGE -->
+
         @if (msg) {
+
           <div class="message">
+
             {{ msg }}
+
           </div>
+
+        }
+
+
+        <!-- LOADING -->
+
+        @if (loading) {
+
+          <div class="loading">
+
+            Loading movies...
+
+          </div>
+
         }
 
 
         <!-- MOVIES -->
-        <div class="grid">
 
-          @for (m of movies; track m.id) {
+        @if (!loading) {
 
-            <div class="card">
+          <section class="movies-grid">
 
-              <div class="movie-header">
+            @for (
+              movie of movies;
+              track movie.id
+            ) {
 
-                <h3>
-                  {{ m.title }}
-                </h3>
+              <article class="movie-card">
 
-                <span class="year">
-                  {{ m.releaseYear }}
-                </span>
+                <div class="movie-top">
 
-              </div>
+                  <div>
 
-              <p class="description">
-                {{ m.description }}
-              </p>
+                    <h2>
+                      {{ movie.title }}
+                    </h2>
 
-              <div class="rating">
+                    <span class="year">
+                      {{ movie.releaseYear }}
+                    </span>
 
-                <span class="average">
-                  ⭐ {{ m.averageRating ?? '-' }}
-                </span>
+                  </div>
 
-              </div>
+                  <div class="rating">
 
-              <div class="rate-section">
+                    ⭐
 
-                <span>Rate this movie:</span>
+                    {{
+                      movie.averageRating
+                      ?? 'N/A'
+                    }}
 
-                <div class="rating-buttons">
+                  </div>
 
-                  @for (s of [1,2,3,4,5]; track s) {
+                </div>
 
-                    <button
-                      type="button"
-                      class="rate-btn"
-                      (click)="rate(m, s)"
-                    >
-                      {{ s }}★
-                    </button>
+
+                <!-- GENRES -->
+
+                <div class="genres">
+
+                  @for (
+                    genre of movie.genres;
+                    track genre.name
+                  ) {
+
+                    <span class="genre">
+                      {{ genre.name }}
+                    </span>
 
                   }
 
                 </div>
 
-              </div>
 
-            </div>
+                <!-- DESCRIPTION -->
 
-          }
+                <p class="description">
 
-        </div>
+                  {{ movie.description }}
+
+                </p>
 
 
-        @if (movies.length === 0) {
+                <!-- ACTIONS -->
+
+                <div class="actions">
+
+                  <button
+                    type="button"
+                    class="details-btn"
+                    (click)="details(movie.id)"
+                  >
+                    View Details
+                  </button>
+
+                </div>
+
+
+                <!-- RATE -->
+
+                <div class="rate-section">
+
+                  <span>
+                    Rate this movie
+                  </span>
+
+                  <div class="rating-buttons">
+
+                    @for (
+                      score of scores;
+                      track score
+                    ) {
+
+                      <button
+                        type="button"
+                        (click)="rate(movie, score)"
+                      >
+                        {{ score }}★
+                      </button>
+
+                    }
+
+                  </div>
+
+                </div>
+
+              </article>
+
+            }
+
+          </section>
+
+        }
+
+
+        <!-- EMPTY -->
+
+        @if (
+          !loading &&
+          movies.length === 0
+        ) {
 
           <div class="empty">
-            <h2>No movies found</h2>
-            <p>Try another search.</p>
+
+            <h2>
+              No movies found
+            </h2>
+
+            <p>
+              Try another title, genre or year.
+            </p>
+
           </div>
 
         }
@@ -174,486 +303,860 @@ import { AuthService } from '../../core/auth.service';
       box-sizing: border-box;
     }
 
+
     .movies-page {
+
       min-height: 100vh;
+
       background:
-        linear-gradient(
-          rgba(0, 0, 0, .35),
-          rgba(0, 0, 0, .65)
-        ),
-        #0b0b0b;
+        radial-gradient(
+          circle at top,
+          #242424 0,
+          #0b0b0b 45%
+        );
 
       color: white;
+
     }
 
 
     /* NAVBAR */
 
     .navbar {
+
       height: 70px;
-      padding: 0 35px;
+
+      padding: 0 40px;
 
       display: flex;
+
       align-items: center;
+
       justify-content: space-between;
 
-      background: #141414;
-      border-bottom: 1px solid #292929;
+      background: rgba(18, 18, 18, .96);
+
+      border-bottom:
+        1px solid #2b2b2b;
 
       position: sticky;
+
       top: 0;
-      z-index: 10;
+
+      z-index: 20;
+
     }
+
 
     .logo {
+
       color: #e50914;
-      font-size: 27px;
+
+      font-size: 28px;
+
       font-weight: 900;
-      letter-spacing: -1px;
+
     }
+
 
     .user-section {
+
       display: flex;
+
       align-items: center;
-      gap: 18px;
+
+      gap: 20px;
+
     }
+
 
     .user-info {
+
       display: flex;
+
       align-items: center;
+
       gap: 10px;
+
     }
 
-    .username {
-      font-weight: 600;
-      color: #fff;
-    }
 
-    .role {
+    .user-info span {
+
       padding: 4px 8px;
+
       border-radius: 5px;
 
-      background: #333;
-      color: #bbb;
+      background: #292929;
+
+      color: #aaa;
 
       font-size: 11px;
-      font-weight: 700;
+
+      text-transform: uppercase;
+
     }
 
 
-    /* LOGOUT */
-
     .logout-btn {
+
+      padding: 9px 17px;
+
       border: 1px solid #444;
+
       border-radius: 6px;
 
       background: transparent;
-      color: #ddd;
 
-      padding: 9px 16px;
-
-      font-size: 14px;
-      font-weight: 600;
+      color: white;
 
       cursor: pointer;
 
-      transition: .2s;
+      font-weight: 600;
+
     }
 
+
     .logout-btn:hover {
+
       background: #e50914;
+
       border-color: #e50914;
-      color: white;
+
     }
 
 
     /* CONTENT */
 
     .content {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 25px 60px;
+
+      max-width: 1250px;
+
+      margin: auto;
+
+      padding: 45px 25px 70px;
+
     }
 
-    .page-title {
-      margin-bottom: 30px;
+
+    .hero {
+
+      margin-bottom: 35px;
+
     }
 
-    .page-title h1 {
-      margin: 0 0 8px;
 
-      font-size: 34px;
-      font-weight: 800;
-    }
+    .hero h1 {
 
-    .page-title p {
       margin: 0;
 
+      font-size: 38px;
+
+      font-weight: 800;
+
+    }
+
+
+    .hero p {
+
       color: #888;
-      font-size: 14px;
+
+      margin-top: 8px;
+
     }
 
 
     /* SEARCH */
 
-    .toolbar {
+    .search-box {
+
       display: flex;
+
       gap: 10px;
+
       margin-bottom: 30px;
+
     }
 
-    .toolbar select,
-    .toolbar input {
-      height: 44px;
 
-      border: 1px solid #333;
+    .search-box select,
+    .search-box input {
+
+      height: 45px;
+
+      border:
+        1px solid #333;
+
       border-radius: 6px;
 
       background: #181818;
+
       color: white;
 
       padding: 0 13px;
 
       font-size: 14px;
+
     }
 
-    .toolbar select {
-      width: 120px;
+
+    .search-box select {
+
+      width: 130px;
+
     }
 
-    .toolbar input {
+
+    .search-box input {
+
       flex: 1;
-      min-width: 150px;
+
     }
 
-    .toolbar input:focus,
-    .toolbar select:focus {
+
+    .search-box input:focus,
+    .search-box select:focus {
+
       outline: none;
+
       border-color: #e50914;
+
     }
+
 
     .search-btn,
     .reset-btn {
-      height: 44px;
+
+      height: 45px;
 
       border: none;
+
       border-radius: 6px;
 
-      padding: 0 20px;
+      padding: 0 22px;
 
       font-weight: 700;
+
       cursor: pointer;
+
     }
+
 
     .search-btn {
+
       background: #e50914;
+
       color: white;
+
     }
+
 
     .search-btn:hover {
+
       background: #f40612;
+
     }
+
 
     .reset-btn {
+
       background: #333;
+
       color: white;
+
     }
 
+
     .reset-btn:hover {
+
       background: #444;
+
     }
 
 
     /* MESSAGE */
 
     .message {
+
       padding: 12px 16px;
+
       margin-bottom: 25px;
 
-      border-radius: 6px;
+      border-radius: 7px;
 
-      background: rgba(46, 204, 113, .1);
-      border: 1px solid rgba(46, 204, 113, .25);
+      background: #241313;
 
-      color: #6ee7a0;
-      font-size: 14px;
+      border:
+        1px solid #542020;
+
+      color: #ff7777;
+
     }
 
 
-    /* MOVIES GRID */
+    /* LOADING */
 
-    .grid {
+    .loading {
+
+      padding: 60px;
+
+      text-align: center;
+
+      color: #888;
+
+    }
+
+
+    /* GRID */
+
+    .movies-grid {
+
       display: grid;
 
       grid-template-columns:
-        repeat(auto-fill, minmax(280px, 1fr));
+        repeat(
+          auto-fill,
+          minmax(290px, 1fr)
+        );
 
-      gap: 20px;
+      gap: 22px;
+
     }
 
 
     /* CARD */
 
-    .card {
+    .movie-card {
+
+      background:
+        linear-gradient(
+          145deg,
+          #1c1c1c,
+          #141414
+        );
+
+      border:
+        1px solid #2b2b2b;
+
+      border-radius: 12px;
+
       padding: 22px;
 
-      background: #181818;
+      transition: .2s;
 
-      border: 1px solid #292929;
-      border-radius: 10px;
-
-      transition:
-        transform .2s,
-        border-color .2s,
-        box-shadow .2s;
     }
 
-    .card:hover {
-      transform: translateY(-3px);
 
-      border-color: #444;
+    .movie-card:hover {
+
+      transform: translateY(-4px);
+
+      border-color: #484848;
 
       box-shadow:
-        0 10px 30px rgba(0, 0, 0, .35);
+        0 15px 35px
+        rgba(0,0,0,.4);
+
     }
 
-    .movie-header {
+
+    .movie-top {
+
       display: flex;
-      align-items: flex-start;
+
       justify-content: space-between;
 
       gap: 10px;
+
     }
 
-    .movie-header h3 {
+
+    .movie-top h2 {
+
       margin: 0;
 
-      font-size: 19px;
-      line-height: 1.3;
+      font-size: 20px;
+
     }
+
 
     .year {
-      color: #888;
+
+      display: block;
+
+      margin-top: 5px;
+
+      color: #777;
+
       font-size: 13px;
-      white-space: nowrap;
+
     }
 
+
+    .rating {
+
+      color: #f5c518;
+
+      font-weight: 700;
+
+      white-space: nowrap;
+
+    }
+
+
+    /* GENRES */
+
+    .genres {
+
+      display: flex;
+
+      flex-wrap: wrap;
+
+      gap: 6px;
+
+      margin: 16px 0;
+
+    }
+
+
+    .genre {
+
+      background: #292929;
+
+      color: #bbb;
+
+      border-radius: 20px;
+
+      padding: 5px 9px;
+
+      font-size: 11px;
+
+    }
+
+
+    /* DESCRIPTION */
+
     .description {
-      min-height: 55px;
 
       color: #aaa;
 
+      line-height: 1.55;
+
       font-size: 14px;
-      line-height: 1.5;
 
-      margin: 15px 0;
+      min-height: 65px;
+
     }
 
-    .rating {
-      margin-bottom: 20px;
+
+    /* ACTIONS */
+
+    .actions {
+
+      margin-top: 18px;
+
     }
 
-    .average {
-      color: #f5c518;
+
+    .details-btn {
+
+      width: 100%;
+
+      height: 40px;
+
+      border: none;
+
+      border-radius: 6px;
+
+      background: white;
+
+      color: #111;
+
       font-weight: 700;
+
+      cursor: pointer;
+
+    }
+
+
+    .details-btn:hover {
+
+      background: #e50914;
+
+      color: white;
+
     }
 
 
     /* RATE */
 
     .rate-section {
-      border-top: 1px solid #292929;
+
+      margin-top: 18px;
 
       padding-top: 15px;
 
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      border-top:
+        1px solid #292929;
+
     }
+
 
     .rate-section > span {
+
       color: #777;
+
       font-size: 12px;
+
     }
+
 
     .rating-buttons {
+
       display: flex;
-      gap: 6px;
+
+      gap: 5px;
+
+      margin-top: 10px;
+
     }
 
-    .rate-btn {
+
+    .rating-buttons button {
+
       flex: 1;
 
-      border: 1px solid #333;
+      border:
+        1px solid #333;
+
       border-radius: 5px;
 
       background: #222;
+
       color: #f5c518;
 
-      padding: 7px 4px;
+      padding: 7px 0;
 
       cursor: pointer;
 
-      font-size: 12px;
       font-weight: 700;
 
-      transition: .2s;
     }
 
-    .rate-btn:hover {
+
+    .rating-buttons button:hover {
+
       background: #e50914;
+
       border-color: #e50914;
+
       color: white;
+
     }
 
 
     /* EMPTY */
 
     .empty {
+
       text-align: center;
 
       padding: 80px 20px;
 
       color: #777;
+
     }
 
+
     .empty h2 {
+
       color: #aaa;
-      margin-bottom: 8px;
+
     }
 
 
     /* MOBILE */
 
-    @media (max-width: 650px) {
+    @media (max-width: 700px) {
 
       .navbar {
-        padding: 0 18px;
-      }
 
-      .logo {
-        font-size: 22px;
+        padding: 0 18px;
+
       }
 
       .user-info {
+
         display: none;
+
+      }
+
+      .logo {
+
+        font-size: 23px;
+
       }
 
       .content {
-        padding: 25px 15px;
+
+        padding: 30px 15px;
+
       }
 
-      .toolbar {
+      .hero h1 {
+
+        font-size: 30px;
+
+      }
+
+      .search-box {
+
         flex-wrap: wrap;
+
       }
 
-      .toolbar select {
-        width: 100%;
-      }
+      .search-box select,
+      .search-box input {
 
-      .toolbar input {
         width: 100%;
+
         flex: none;
+
       }
 
       .search-btn,
       .reset-btn {
+
         flex: 1;
+
       }
 
-      .grid {
+      .movies-grid {
+
         grid-template-columns: 1fr;
+
       }
+
     }
 
   `]
 })
-export class MoviesComponent implements OnInit {
+export class MoviesComponent
+  implements OnInit {
 
   movies: Movie[] = [];
 
   mode = 'title';
+
   query = '';
+
   msg = '';
+
+  loading = false;
+
+  scores = [1, 2, 3, 4, 5];
+
 
   constructor(
     private api: ApiService,
-    public auth: AuthService
+    public auth: AuthService,
+    private router: Router
   ) {}
 
+
   ngOnInit() {
+
     this.load();
+
   }
 
+
   load() {
+
+    this.loading = true;
+
+    this.msg = '';
 
     this.query = '';
 
     this.api.movies().subscribe({
+
       next: movies => {
+
         this.movies = movies;
+
+        this.loading = false;
+
       },
 
-      error: e => {
-        this.msg =
-          typeof e.error === 'string'
-            ? e.error
-            : 'Unable to load movies.';
+      error: error => {
+
+        this.loading = false;
+
+        this.handleError(error);
+
       }
+
     });
+
   }
+
 
   search() {
 
-    if (!this.query.trim()) {
+    const value =
+      this.query.trim();
+
+    if (!value) {
+
       this.load();
+
       return;
+
     }
 
-    const req =
-      this.mode === 'title'
-        ? this.api.searchTitle(this.query)
-        : this.mode === 'genre'
-          ? this.api.searchGenre(this.query)
-          : this.api.searchYear(+this.query);
 
-    req.subscribe({
+    this.loading = true;
+
+    this.msg = '';
+
+
+    let request;
+
+
+    if (this.mode === 'title') {
+
+      request =
+        this.api.searchTitle(value);
+
+    } else if (this.mode === 'genre') {
+
+      request =
+        this.api.searchGenre(value);
+
+    } else {
+
+      const year =
+        Number(value);
+
+      if (Number.isNaN(year)) {
+
+        this.loading = false;
+
+        this.msg =
+          'Please enter a valid year.';
+
+        return;
+
+      }
+
+      request =
+        this.api.searchYear(year);
+
+    }
+
+
+    request.subscribe({
+
       next: movies => {
+
         this.movies = movies;
+
+        this.loading = false;
+
       },
 
-      error: e => {
-        this.msg =
-          typeof e.error === 'string'
-            ? e.error
-            : 'Search failed.';
-      }
-    });
-  }
+      error: error => {
 
-  rate(m: Movie, score: number) {
+        this.loading = false;
 
-    this.api.rate(m.id, score).subscribe({
+        this.handleError(error);
 
-      next: () => {
-        this.msg =
-          `You rated "${m.title}" ${score}/5`;
-      },
-
-      error: e => {
-
-        this.msg =
-          typeof e.error === 'string'
-            ? e.error
-            : 'Error while rating movie.';
       }
 
     });
+
   }
+
+
+  details(id: number) {
+
+    this.router.navigate([
+      '/movies',
+      id
+    ]);
+
+  }
+
+
+  rate(
+    movie: Movie,
+    score: number
+  ) {
+
+    this.msg = '';
+
+    this.api
+      .rate(movie.id, score)
+      .subscribe({
+
+        next: () => {
+
+          this.msg =
+            `You rated "${movie.title}" ${score}/5`;
+
+        },
+
+        error: error => {
+
+          if (error.status === 401) {
+
+            this.auth.logout();
+
+            return;
+
+          }
+
+          this.msg =
+            typeof error.error === 'string'
+              ? error.error
+              : 'Unable to rate this movie.';
+
+        }
+
+      });
+
+  }
+
 
   logout() {
 
     this.auth.logout();
+
+  }
+
+
+  private handleError(error: any) {
+
+    if (error.status === 401) {
+
+      this.auth.logout();
+
+      return;
+
+    }
+
+    if (error.status === 0) {
+
+      this.msg =
+        'Cannot connect to movie server.';
+
+      return;
+
+    }
+
+    this.msg =
+      'Unable to load movies.';
 
   }
 

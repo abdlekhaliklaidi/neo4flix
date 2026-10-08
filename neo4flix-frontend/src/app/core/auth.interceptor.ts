@@ -33,9 +33,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
     catchError((error: HttpErrorResponse) => {
 
-      /*
-       * JWT invalid / expired
-       */
       if (
         error.status === 401 &&
         token

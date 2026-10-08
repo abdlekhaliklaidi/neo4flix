@@ -51,25 +51,46 @@ export class AuthService {
     return isPlatformBrowser(this.platformId);
   }
 
-  private loadUser(): AuthResponse | null {
+ private loadUser(): AuthResponse | null {
 
-    if (!this.isBrowser()) {
-      return null;
-    }
-
-    const user = localStorage.getItem('user');
-
-    if (!user) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(user);
-    } catch {
-      localStorage.removeItem('user');
-      return null;
-    }
+  if (!this.isBrowser()) {
+    return null;
   }
+
+  const token = localStorage.getItem('token');
+  const userJson = localStorage.getItem('user');
+
+  if (!token || !userJson) {
+    return null;
+  }
+
+  try {
+
+    const user = JSON.parse(userJson);
+
+    const storedUserId =
+      localStorage.getItem('userId');
+
+    if (storedUserId) {
+
+      const id = Number(storedUserId);
+
+      if (!Number.isNaN(id)) {
+        user.userId = id;
+      }
+    }
+
+    user.token = token;
+
+    return user;
+
+  } catch {
+
+    localStorage.removeItem('user');
+
+    return null;
+  }
+}
 
   login(username: string, password: string) {
 
@@ -179,19 +200,53 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  get token(): string | null {
-    return this._user()?.token ?? null;
+ get token(): string | null {
+
+  if (!this.isBrowser()) {
+    return null;
   }
 
-  get userId(): number | null {
-    return this._user()?.userId ?? null;
+  return localStorage.getItem('token');
+}
+
+
+get userId(): number | null {
+
+  if (!this.isBrowser()) {
+    return null;
   }
 
-  get username(): string | null {
-    return this._user()?.username ?? null;
+  const value = localStorage.getItem('userId');
+
+  if (!value) {
+    return null;
   }
 
-  get role(): string | null {
-    return this._user()?.role ?? null;
+  const id = Number(value);
+
+  return Number.isNaN(id)
+    ? null
+    : id;
+}
+
+
+get username(): string | null {
+
+  if (!this.isBrowser()) {
+    return null;
   }
+
+  return localStorage.getItem('username');
+}
+
+
+get role(): string | null {
+
+  if (!this.isBrowser()) {
+    return null;
+  }
+
+  return localStorage.getItem('role');
+}
+
 }

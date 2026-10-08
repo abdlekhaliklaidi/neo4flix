@@ -57,10 +57,15 @@ public class SecurityConfig {
                     .pathMatchers(
                             "/api/auth/login",
                             "/api/auth/register",
-                            "/api/movies/**",
+                        //     "/api/movies/**",
                             "/actuator/health",
                             "/actuator/gateway/**"
                     ).permitAll()
+                    
+                    .pathMatchers(
+                                HttpMethod.GET,
+                                "/api/movies/**"
+                        ).permitAll()
 
                     .pathMatchers(HttpMethod.OPTIONS)
                     .permitAll()
