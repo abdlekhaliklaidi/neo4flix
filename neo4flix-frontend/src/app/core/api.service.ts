@@ -94,8 +94,54 @@ export class ApiService {
       }
     );
   }
+  
+  createMovie(movie: {
+  title: string;
+  releaseYear: number;
+  description: string;
+  genres?: Genre[];
+}) {
 
-  // Ratings
+  return this.http.post<Movie>(
+    `${API}/movies`,
+    movie
+  );
+}
+
+  saveMovie(movieId: number) {
+
+  return this.http.post<void>(
+    `${API}/saved-movies/${this.auth.userId}/${movieId}`,
+    null
+  );
+}
+
+
+// Remove saved movie
+removeSavedMovie(movieId: number) {
+
+  return this.http.delete<void>(
+    `${API}/saved-movies/${this.auth.userId}/${movieId}`
+  );
+}
+
+
+savedMovies() {
+
+  return this.http.get<Movie[]>(
+    `${API}/saved-movies/${this.auth.userId}`
+  );
+}
+
+
+// Check if movie is saved
+isMovieSaved(movieId: number) {
+
+  return this.http.get<boolean>(
+    `${API}/saved-movies/${this.auth.userId}/${movieId}`
+  );
+}
+
 
   // Rate a movie
   rate(movieId: number, score: number) {

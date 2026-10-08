@@ -1,0 +1,182 @@
+<div class="saved-page">
+
+  <header class="navbar">
+
+    <div class="logo">
+      Neo4flix
+    </div>
+
+    <div class="user-section">
+
+      <button
+        class="back-btn"
+        type="button"
+        (click)="goMovies()"
+      >
+        Movies
+      </button>
+
+      <div class="user-info">
+
+        <strong>
+          {{ auth.user()?.username }}
+        </strong>
+
+        <span>
+          {{ auth.user()?.role }}
+        </span>
+
+      </div>
+
+      <button
+        class="logout-btn"
+        type="button"
+        (click)="logout()"
+      >
+        Logout
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <main class="content">
+
+    <section class="hero">
+
+      <h1>
+        My Saved Movies
+      </h1>
+
+      <p>
+        Movies you've saved to watch later.
+      </p>
+
+    </section>
+
+
+    @if (msg) {
+
+      <div class="message">
+        {{ msg }}
+      </div>
+
+    }
+
+
+    @if (loading) {
+
+      <div class="loading">
+        Loading saved movies...
+      </div>
+
+    }
+
+
+    @if (!loading && movies.length > 0) {
+
+      <section class="movies-grid">
+
+        @for (movie of movies; track movie.id) {
+
+          <article class="movie-card">
+
+            <div class="movie-top">
+
+              <div>
+
+                <h2>
+                  {{ movie.title }}
+                </h2>
+
+                <span class="year">
+                  {{ movie.releaseYear }}
+                </span>
+
+              </div>
+
+              <div class="rating">
+                ⭐ {{ movie.averageRating ?? 'N/A' }}
+              </div>
+
+            </div>
+
+
+            <div class="genres">
+
+              @for (
+                genre of movie.genres;
+                track genre.name
+              ) {
+
+                <span class="genre">
+                  {{ genre.name }}
+                </span>
+
+              }
+
+            </div>
+
+
+            <p class="description">
+              {{ movie.description }}
+            </p>
+
+
+            <div class="actions">
+
+              <button
+                type="button"
+                class="details-btn"
+                (click)="details(movie.id)"
+              >
+                View Details
+              </button>
+
+              <button
+                type="button"
+                class="remove-btn"
+                (click)="remove(movie)"
+              >
+                Remove
+              </button>
+
+            </div>
+
+          </article>
+
+        }
+
+      </section>
+
+    }
+
+
+    @if (!loading && movies.length === 0) {
+
+      <div class="empty">
+
+        <h2>
+          No saved movies
+        </h2>
+
+        <p>
+          Go to Movies and save the films you want to watch later.
+        </p>
+
+        <button
+          type="button"
+          class="create-btn"
+          (click)="goMovies()"
+        >
+          Browse Movies
+        </button>
+
+      </div>
+
+    }
+
+  </main>
+
+</div>

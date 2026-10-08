@@ -67,6 +67,21 @@ export const routes: Routes = [
   },
 
   {
+  path: 'saved-movies',
+
+  canActivate: [
+    authGuard
+  ],
+
+  loadComponent: () =>
+    import(
+      './pages/saved-movies/saved-movies.component'
+    ).then(
+      m => m.SavedMoviesComponent
+    )
+},
+
+  {
     path: 'ratings',
 
     canActivate: [

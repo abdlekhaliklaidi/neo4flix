@@ -5,6 +5,7 @@ import movie.service.service.MovieService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import movie.service.Repository.MovieRepository;
 
 import java.util.List;
 
@@ -14,9 +15,11 @@ import java.util.List;
 public class MovieController {
 
     private final MovieService movieService;
+    public final MovieRepository movieRepository;
 
-    public MovieController(MovieService movieService) {
+    public MovieController(MovieService movieService, MovieRepository movieRepository) {
         this.movieService = movieService;
+        this.movieRepository = movieRepository;
     }
 
     
@@ -75,27 +78,41 @@ public class MovieController {
     }
 
 
-    @PostMapping
-    public ResponseEntity<Movie> createMovie(
-            @RequestBody Movie movie
-    ) {
+    public Movie createMovie(Movie movie) {
 
-        try {
+    if (movie.getTitle() == null ||
+            movie.getTitle().trim().isEmpty()) {
 
-            Movie created =
-                    movieService.createMovie(movie);
-
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(created);
-
-        } catch (IllegalArgumentException e) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .build();
-        }
+        throw new IllegalArgumentException(
+                "Movie title is required"
+        );
     }
+
+    if (movie.getReleaseYear() == null) {
+
+        throw new IllegalArgumentException(
+                "Release year is required"
+        );
+    }
+
+    if (movie.getReleaseYear() < 1888 ||
+            movie.getReleaseYear() > 2100) {
+
+        throw new IllegalArgumentException(
+                "Invalid release year"
+        );
+    }
+
+    movie.setTitle(movie.getTitle().trim());
+
+    if (movie.getDescription() == null) {
+        movie.setDescription("");
+    }
+
+    movie.setAverageRating(0.0);
+
+    return movieRepository.save(movie);
+}
 
 
     @PutMapping("/{id}")
