@@ -188,26 +188,26 @@ isMovieSaved(movieId: number) {
 
   // Recommendations
 
-  // recommendations(
-  //   genre?: string,
-  //   releaseYear?: number,
-  //   limit = 10
-  // ) {
+  recommendations(
+    genre?: string,
+    releaseYear?: number,
+    limit = 10
+  ) {
 
-  //   let params = new HttpParams()
-  //     .set('limit', limit);
+    let params = new HttpParams()
+      .set('limit', limit);
 
-  //   if (genre) {
-  //     params = params.set('genre', genre);
-  //   }
+    if (genre) {
+      params = params.set('genre', genre);
+    }
 
-  //   if (releaseYear) {
-  //     params = params.set('releaseYear', releaseYear);
-  //   }
+    if (releaseYear) {
+      params = params.set('releaseYear', releaseYear);
+    }
 
-  //   return this.http.get<Recommendation[]>(
-  //     `${API}/recommendations/user/${this.auth.userId}`,
-  //     { params }
-  //   );
-  // }
+    return this.http.get<Recommendation[]>(
+      `${API}/recommendations/user/${this.auth.userId}`,
+      { params }
+    );
+  }
 }
