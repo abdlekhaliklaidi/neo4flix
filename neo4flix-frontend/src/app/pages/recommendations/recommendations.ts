@@ -1,145 +1,145 @@
-// import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { FormsModule } from '@angular/forms';
-// import { Router } from '@angular/router';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
-// import {
-//   ApiService,
-//   Recommendation
-// } from '../../core/api.service';
+import {
+  ApiService,
+  Recommendation
+} from '../../core/api.service';
 
-// import { AuthService } from '../../core/auth.service';
+import { AuthService } from '../../core/auth.service';
 
-// @Component({
-//   selector: 'app-recommendations',
-//   standalone: true,
-//   imports: [
-//     CommonModule,
-//     FormsModule
-//   ],
-//   templateUrl: './recommendations.html',
-//   styleUrl: './recommendations.css'
-// })
-// export class Recommendations implements OnInit {
+@Component({
+  selector: 'app-recommendations',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
+  templateUrl: './recommendations.html',
+  styleUrl: './recommendations.css'
+})
+export class Recommendations implements OnInit {
 
-//   recommendations: Recommendation[] = [];
+  recommendations: Recommendation[] = [];
 
-//   genre = '';
-//   releaseYear: number | null = null;
-//   limit = 10;
+  genre = '';
+  releaseYear: number | null = null;
+  limit = 10;
 
-//   loading = false;
-//   msg = '';
+  loading = false;
+  msg = '';
 
-//   readonly currentYear = new Date().getFullYear();
+  readonly currentYear = new Date().getFullYear();
 
-//   constructor(
-//     private api: ApiService,
-//     public auth: AuthService,
-//     private router: Router,
-//     private cdr: ChangeDetectorRef
-//   ) {}
+  constructor(
+    private api: ApiService,
+    public auth: AuthService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-//   ngOnInit(): void {
-//     this.loadRecommendations();
-//   }
+  ngOnInit(): void {
+    this.loadRecommendations();
+  }
 
-//   loadRecommendations(): void {
+  loadRecommendations(): void {
 
-//     this.loading = true;
-//     this.msg = '';
+    this.loading = true;
+    this.msg = '';
 
-//     const year = this.releaseYear;
+    const year = this.releaseYear;
 
-//     this.api.recommendations(
-//       this.genre.trim() || undefined,
-//       year && year > 0 ? year : undefined,
-//       this.limit
-//     ).subscribe({
+    this.api.recommendations(
+      this.genre.trim() || undefined,
+      year && year > 0 ? year : undefined,
+      this.limit
+    ).subscribe({
 
-//       next: (recommendations) => {
+      next: (recommendations) => {
 
-//         this.recommendations = recommendations;
+        this.recommendations = recommendations;
 
-//         this.loading = false;
+        this.loading = false;
 
-//         if (recommendations.length === 0) {
-//           this.msg =
-//             'No recommendations found. Rate some movies to discover your next favorite.';
-//         }
+        if (recommendations.length === 0) {
+          this.msg =
+            'No recommendations found. Rate some movies to discover your next favorite.';
+        }
 
-//         this.cdr.detectChanges();
-//       },
+        this.cdr.detectChanges();
+      },
 
-//       error: (error) => {
+      error: (error) => {
 
-//         this.loading = false;
+        this.loading = false;
 
-//         if (error.status === 401) {
-//           this.auth.logout();
-//           return;
-//         }
+        if (error.status === 401) {
+          this.auth.logout();
+          return;
+        }
 
-//         this.msg =
-//           'Unable to load recommendations. Please try again.';
+        this.msg =
+          'Unable to load recommendations. Please try again.';
 
-//         console.error(
-//           'Recommendations error:',
-//           error
-//         );
+        console.error(
+          'Recommendations error:',
+          error
+        );
 
-//         this.cdr.detectChanges();
-//       }
+        this.cdr.detectChanges();
+      }
 
-//     });
-//   }
+    });
+  }
 
-//   search(): void {
+  search(): void {
 
-//     if (
-//       this.releaseYear !== null &&
-//       (
-//         !Number.isInteger(Number(this.releaseYear)) ||
-//         Number(this.releaseYear) < 1888 ||
-//         Number(this.releaseYear) > this.currentYear + 10
-//       )
-//     ) {
+    if (
+      this.releaseYear !== null &&
+      (
+        !Number.isInteger(Number(this.releaseYear)) ||
+        Number(this.releaseYear) < 1888 ||
+        Number(this.releaseYear) > this.currentYear + 10
+      )
+    ) {
 
-//       this.msg = 'Please enter a valid release year.';
+      this.msg = 'Please enter a valid release year.';
 
-//       return;
-//     }
+      return;
+    }
 
-//     this.loadRecommendations();
-//   }
+    this.loadRecommendations();
+  }
 
-//   resetFilters(): void {
+  resetFilters(): void {
 
-//     this.genre = '';
-//     this.releaseYear = null;
-//     this.limit = 10;
+    this.genre = '';
+    this.releaseYear = null;
+    this.limit = 10;
 
-//     this.loadRecommendations();
-//   }
+    this.loadRecommendations();
+  }
 
-//   viewMovie(movieId: number): void {
+  viewMovie(movieId: number): void {
 
-//     this.router.navigate([
-//       '/movies',
-//       movieId
-//     ]);
-//   }
+    this.router.navigate([
+      '/movies',
+      movieId
+    ]);
+  }
 
-//   goToMovies(): void {
+  goToMovies(): void {
 
-//     this.router.navigate([
-//       '/movies'
-//     ]);
-//   }
+    this.router.navigate([
+      '/movies'
+    ]);
+  }
 
-//   logout(): void {
+  logout(): void {
 
-//     this.auth.logout();
-//   }
+    this.auth.logout();
+  }
 
-// }
+}
