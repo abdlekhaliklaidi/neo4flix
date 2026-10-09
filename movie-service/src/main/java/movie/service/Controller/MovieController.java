@@ -78,40 +78,22 @@ public class MovieController {
     }
 
 
-    public Movie createMovie(Movie movie) {
+    @PostMapping
+    public ResponseEntity<Movie> createMovie(
+        @RequestBody Movie movie) {
 
-    if (movie.getTitle() == null ||
-            movie.getTitle().trim().isEmpty()) {
+    try {
+        Movie createdMovie = movieService.createMovie(movie);
 
-        throw new IllegalArgumentException(
-                "Movie title is required"
-        );
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(createdMovie);
+
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity
+                .badRequest()
+                .build();
     }
-
-    if (movie.getReleaseYear() == null) {
-
-        throw new IllegalArgumentException(
-                "Release year is required"
-        );
-    }
-
-    if (movie.getReleaseYear() < 1888 ||
-            movie.getReleaseYear() > 2100) {
-
-        throw new IllegalArgumentException(
-                "Invalid release year"
-        );
-    }
-
-    movie.setTitle(movie.getTitle().trim());
-
-    if (movie.getDescription() == null) {
-        movie.setDescription("");
-    }
-
-    movie.setAverageRating(0.0);
-
-    return movieRepository.save(movie);
 }
 
 

@@ -38,4 +38,10 @@ public interface MovieRepository extends Neo4jRepository<Movie, Long> {
         RETURN m, collect(g)
         """)
     Movie findMovieWithGenres(Long id);
+
+    @Query("""
+    MATCH (m:Movie)
+    RETURN coalesce(max(m.id), 0) + 1
+    """)
+    Long findNextMovieId();
 }

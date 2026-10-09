@@ -28,99 +28,105 @@ public class RecommendationService {
     }
 
     public List<Recommendation> getRecommendations(
-            Long userId,
-            String genre,
-            Integer releaseYear,
-            Integer limit) {
+        Long userId,
+        String genre,
+        Integer releaseYear,
+        Integer limit) {
 
-        StringBuilder query = new StringBuilder("""
-            MATCH (u:User {id: $userId})
+    StringBuilder query = new StringBuilder("""
+        MATCH (u:User {id: $userId})
 
-            MATCH (u)-[myRating:RATED]->(liked:Movie)
-            WHERE myRating.score >= 4
+        MATCH (u)-[myRating:RATED]->(liked:Movie)
+        WHERE myRating.score >= 4
 
-            MATCH (other:User)-[otherRating:RATED]->(liked)
-            WHERE other <> u
-              AND otherRating.score >= 4
+        MATCH (other:User)-[otherRating:RATED]->(liked)
+        WHERE other <> u
+          AND otherRating.score >= 4
 
-            MATCH (other)-[recommendation:RATED]->(movie:Movie)
+        MATCH (other)-[recommendation:RATED]->(movie:Movie)
 
-            WHERE recommendation.score >= 4
-              AND NOT EXISTS {
-                  MATCH (u)-[:RATED]->(movie)
-              }
-            """);
+        WHERE recommendation.score >= 4
+          AND NOT EXISTS {
+              MATCH (u)-[:RATED]->(movie)
+          }
+        """);
 
-        if (genre != null && !genre.isBlank()) {
-            query.append("""
-                AND EXISTS {
-                    MATCH (movie)-[:IN_GENRE]->(g:Genre)
-                    WHERE toLower(g.name) = toLower($genre)
-                }
-                """);
-        }
-
-        if (releaseYear != null) {
-            query.append("""
-                AND movie.releaseYear = $releaseYear
-                """);
-        }
-
+    if (genre != null && !genre.isBlank()) {
         query.append("""
-            WITH movie,
-                 count(DISTINCT other) AS similarUsers,
-                 avg(recommendation.score) AS communityScore,
-                 count(DISTINCT liked) AS commonMovies
-
-            WITH movie,
-                 similarUsers,
-                 communityScore,
-                 commonMovies,
-                 (
-                     similarUsers * 2.0
-                     + communityScore
-                     + commonMovies
-                 ) AS recommendationScore
-
-            RETURN
-                movie.id AS movieId,
-                movie.title AS title,
-                movie.releaseYear AS releaseYear,
-                movie.description AS description,
-                movie.averageRating AS averageRating,
-                recommendationScore AS score,
-                CASE
-                    WHEN similarUsers >= 3
-                    THEN 'Users with similar ratings liked this movie'
-                    WHEN commonMovies >= 2
-                    THEN 'Based on movies you liked'
-                    ELSE 'Recommended from your rating history'
-                END AS reason
-
-            ORDER BY recommendationScore DESC,
-                     movie.averageRating DESC
-
-            LIMIT $limit
+            AND EXISTS {
+                MATCH (movie)-[:IN_GENRE]->(g:Genre)
+                WHERE toLower(g.name) = toLower($genre)
+            }
             """);
+    }
 
-        var queryObject = neo4jClient.query(query.toString())
-                .bind(userId).to("userId")
-                .bind(limit).to("limit");
+    if (releaseYear != null) {
+        query.append("""
+            AND movie.releaseYear = $releaseYear
+            """);
+    }
 
-        if (genre != null && !genre.isBlank()) {
-            queryObject = queryObject.bind(genre).to("genre");
-        }
+    query.append("""
+        WITH movie,
+             count(DISTINCT other) AS similarUsers,
+             avg(recommendation.score) AS communityScore,
+             count(DISTINCT liked) AS commonMovies
 
-        if (releaseYear != null) {
-            queryObject = queryObject.bind(releaseYear).to("releaseYear");
-        }
+        WITH movie,
+             similarUsers,
+             communityScore,
+             commonMovies,
+             (
+                 similarUsers * 2.0
+                 + communityScore
+                 + commonMovies
+             ) AS recommendationScore
 
-        return queryObject
-                .fetch()
-                .all()
-                .stream()
-                .map(this::mapRecommendation)
-                .toList();
+        RETURN
+            movie.id AS movieId,
+            movie.title AS title,
+            movie.releaseYear AS releaseYear,
+            movie.description AS description,
+            movie.averageRating AS averageRating,
+            recommendationScore AS score,
+            CASE
+                WHEN similarUsers >= 3
+                THEN 'Users with similar ratings liked this movie'
+                WHEN commonMovies >= 2
+                THEN 'Based on movies you liked'
+                ELSE 'Recommended from your rating history'
+            END AS reason
+
+        ORDER BY recommendationScore DESC,
+                 movie.averageRating DESC
+
+        LIMIT $limit
+        """);
+
+    var queryObject = neo4jClient.query(query.toString())
+            .bind(userId).to("userId")
+            .bind(limit).to("limit");
+
+    if (genre != null && !genre.isBlank()) {
+        queryObject = queryObject.bind(genre).to("genre");
+    }
+
+    if (releaseYear != null) {
+        queryObject = queryObject.bind(releaseYear).to("releaseYear");
+    }
+
+    List<Recommendation> recommendations = queryObject
+            .fetch()
+            .all()
+            .stream()
+            .map(this::mapRecommendation)
+            .toList();
+
+    if (!recommendations.isEmpty()) {
+        return recommendations;
+    }
+
+        return getPopularMovies(userId, genre, releaseYear, limit);
     }
 
     private Recommendation mapRecommendation(
@@ -136,6 +142,80 @@ public class RecommendationService {
                 (String) result.get("reason")
         );
     }
+
+    private List<Recommendation> getPopularMovies(
+        Long userId,
+        String genre,
+        Integer releaseYear,
+        Integer limit) {
+
+    StringBuilder query = new StringBuilder("""
+        MATCH (u:User {id: $userId})
+        MATCH (movie:Movie)
+
+        WHERE NOT EXISTS {
+            MATCH (u)-[:RATED]->(movie)
+        }
+        """);
+
+    if (genre != null && !genre.isBlank()) {
+        query.append("""
+            AND EXISTS {
+                MATCH (movie)-[:IN_GENRE]->(g:Genre)
+                WHERE toLower(g.name) = toLower($genre)
+            }
+            """);
+    }
+
+    if (releaseYear != null) {
+        query.append("""
+            AND movie.releaseYear = $releaseYear
+            """);
+    }
+
+    query.append("""
+        OPTIONAL MATCH (:User)-[r:RATED]->(movie)
+
+        WITH movie,
+             avg(r.score) AS communityRating,
+             count(r) AS ratingsCount
+
+        RETURN
+            movie.id AS movieId,
+            movie.title AS title,
+            movie.releaseYear AS releaseYear,
+            movie.description AS description,
+            movie.averageRating AS averageRating,
+            coalesce(communityRating, movie.averageRating, 0.0) AS score,
+            'Popular movies you have not rated yet' AS reason
+
+        ORDER BY ratingsCount DESC,
+                 score DESC,
+                 movie.title ASC
+
+        LIMIT $limit
+        """);
+
+    var queryObject = neo4jClient.query(query.toString())
+            .bind(userId).to("userId")
+            .bind(limit).to("limit");
+
+    if (genre != null && !genre.isBlank()) {
+        queryObject = queryObject.bind(genre).to("genre");
+    }
+
+    if (releaseYear != null) {
+        queryObject = queryObject.bind(releaseYear).to("releaseYear");
+    }
+
+    return queryObject
+            .fetch()
+            .all()
+            .stream()
+            .map(this::mapRecommendation)
+            .toList();
+    }
+
 
     private Long toLong(Object value) {
 

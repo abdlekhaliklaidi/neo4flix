@@ -1,1 +1,407 @@
-<p>recommendations works!</p>
+<div class="recommendations-page">
+
+  <!-- NAVBAR -->
+
+  <header class="navbar">
+
+    <div
+      class="logo"
+      (click)="goToMovies()"
+    >
+      Neo4flix
+    </div>
+
+    <div class="nav-actions">
+
+      <button
+        type="button"
+        class="nav-btn"
+        (click)="goToMovies()"
+      >
+        Movies
+      </button>
+
+      <div class="user-info">
+
+        <strong>
+          {{ auth.user()?.username }}
+        </strong>
+
+        <span>
+          {{ auth.user()?.role }}
+        </span>
+
+      </div>
+
+      <button
+        type="button"
+        class="logout-btn"
+        (click)="logout()"
+      >
+        Logout
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <!-- MAIN -->
+
+  <main class="content">
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+      <span class="eyebrow">
+        PERSONALIZED FOR YOU
+      </span>
+
+      <h1>
+        Your Recommendations
+      </h1>
+
+      <p>
+        Discover movies selected based on your ratings
+        and the preferences of users with similar tastes.
+      </p>
+
+    </section>
+
+
+    <!-- FILTERS -->
+
+    <section class="filters">
+
+      <div class="filter-group">
+
+        <label for="genre">
+          Genre
+        </label>
+
+        <select
+          id="genre"
+          [(ngModel)]="genre"
+        >
+
+          <option value="">
+            All Genres
+          </option>
+
+          <option value="Action">
+            Action
+          </option>
+
+          <option value="Adventure">
+            Adventure
+          </option>
+
+          <option value="Animation">
+            Animation
+          </option>
+
+          <option value="Comedy">
+            Comedy
+          </option>
+
+          <option value="Crime">
+            Crime
+          </option>
+
+          <option value="Drama">
+            Drama
+          </option>
+
+          <option value="Fantasy">
+            Fantasy
+          </option>
+
+          <option value="Horror">
+            Horror
+          </option>
+
+          <option value="Romance">
+            Romance
+          </option>
+
+          <option value="Sci-Fi">
+            Sci-Fi
+          </option>
+
+          <option value="Thriller">
+            Thriller
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="filter-group">
+
+        <label for="releaseYear">
+          Release Year
+        </label>
+
+        <input
+          id="releaseYear"
+          type="number"
+          [(ngModel)]="releaseYear"
+          placeholder="e.g. 2014"
+          min="1888"
+          [max]="currentYear + 10"
+        />
+
+      </div>
+
+
+      <div class="filter-group">
+
+        <label for="limit">
+          Number of movies
+        </label>
+
+        <select
+          id="limit"
+          [(ngModel)]="limit"
+        >
+
+          <option [ngValue]="5">
+            5 Movies
+          </option>
+
+          <option [ngValue]="10">
+            10 Movies
+          </option>
+
+          <option [ngValue]="20">
+            20 Movies
+          </option>
+
+          <option [ngValue]="50">
+            50 Movies
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="search-btn"
+        (click)="search()"
+        [disabled]="loading"
+      >
+        Apply Filters
+      </button>
+
+
+      <button
+        type="button"
+        class="reset-btn"
+        (click)="resetFilters()"
+        [disabled]="loading"
+      >
+        Reset
+      </button>
+
+    </section>
+
+
+    <!-- STATUS -->
+
+    @if (loading) {
+
+      <div class="loading">
+
+        <div class="spinner"></div>
+
+        <p>
+          Finding movies for you...
+        </p>
+
+      </div>
+
+    }
+
+
+    @if (msg && !loading) {
+
+      <div class="message">
+        {{ msg }}
+      </div>
+
+    }
+
+
+    <!-- RESULTS -->
+
+    @if (!loading && recommendations.length > 0) {
+
+      <section class="results-header">
+
+        <div>
+
+          <h2>
+            Recommended Movies
+          </h2>
+
+          <p>
+            {{ recommendations.length }}
+            movies selected for you
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <section class="movies-grid">
+
+        @for (
+          movie of recommendations;
+          track movie.movieId
+        ) {
+
+          <article class="movie-card">
+
+            <!-- MOVIE HEADER -->
+
+            <div class="movie-top">
+
+              <div class="movie-info">
+
+                <span class="movie-label">
+                  RECOMMENDED
+                </span>
+
+                <h2>
+                  {{ movie.title }}
+                </h2>
+
+                <span class="year">
+                  {{ movie.releaseYear }}
+                </span>
+
+              </div>
+
+
+              <div class="rating">
+
+                <span>★</span>
+
+                {{
+                  movie.averageRating ?? 'N/A'
+                }}
+
+              </div>
+
+            </div>
+
+
+            <!-- DESCRIPTION -->
+
+            <p class="description">
+
+              {{
+                movie.description ||
+                'No description available.'
+              }}
+
+            </p>
+
+
+            <!-- RECOMMENDATION SCORE -->
+
+            <div class="score-section">
+
+              <span class="score-label">
+                Recommendation score
+              </span>
+
+              <strong>
+                {{
+                  movie.score != null
+                    ? (movie.score | number:'1.1-2')
+                    : 'N/A'
+                }}
+              </strong>
+
+            </div>
+
+
+            <!-- REASON -->
+
+            <div class="reason">
+
+              <span class="reason-icon">
+                ✨
+              </span>
+
+              <p>
+                {{ movie.reason }}
+              </p>
+
+            </div>
+
+
+            <!-- ACTION -->
+
+            <button
+              type="button"
+              class="details-btn"
+              (click)="viewMovie(movie.movieId)"
+            >
+              View Movie
+              <span>→</span>
+            </button>
+
+          </article>
+
+        }
+
+      </section>
+
+    }
+
+
+    <!-- EMPTY STATE -->
+
+    @if (
+      !loading &&
+      recommendations.length === 0 &&
+      !msg
+    ) {
+
+      <section class="empty">
+
+        <div class="empty-icon">
+          🎬
+        </div>
+
+        <h2>
+          No recommendations yet
+        </h2>
+
+        <p>
+          Rate your favorite movies to help us discover
+          movies that match your taste.
+        </p>
+
+        <button
+          type="button"
+          class="search-btn"
+          (click)="goToMovies()"
+        >
+          Explore Movies
+        </button>
+
+      </section>
+
+    }
+
+  </main>
+
+</div>

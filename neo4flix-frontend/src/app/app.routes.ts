@@ -96,6 +96,21 @@ export const routes: Routes = [
       )
   },
 
+   {
+    path: 'recommendations',
+
+    canActivate: [
+      authGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './pages/recommendations/recommendations'
+      ).then(
+        m => m.Recommendations
+      )
+  },
+
   {
     path: '',
     pathMatch: 'full',

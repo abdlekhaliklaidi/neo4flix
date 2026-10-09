@@ -3,6 +3,7 @@ package movie.service.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
+import org.springframework.data.neo4j.core.schema.GeneratedValue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,6 +12,7 @@ import java.util.Set;
 public class Movie {
 
     @Id
+    // @GeneratedValue
     private Long id;
 
     private String title;

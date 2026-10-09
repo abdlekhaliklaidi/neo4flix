@@ -6,7 +6,8 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 import java.util.List;
 
-public interface SavedMovieRepository extends Neo4jRepository<Movie, Long> {
+public interface SavedMovieRepository
+        extends Neo4jRepository<Movie, Long> {
 
     @Query("""
         MATCH (u:User {id: $userId})-[:SAVED]->(m:Movie)

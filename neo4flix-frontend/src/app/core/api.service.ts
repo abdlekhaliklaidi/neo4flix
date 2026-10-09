@@ -145,6 +145,13 @@ isMovieSaved(movieId: number) {
 
   // Rate a movie
   rate(movieId: number, score: number) {
+    
+    const userId = this.auth.userId;
+
+    if (userId == null || movieId == null ||
+      !Number.isFinite(Number(movieId))) {
+      throw new Error('User ID or Movie ID is missing.');
+    }
 
     const params = new HttpParams()
       .set('userId', this.auth.userId!)
@@ -181,26 +188,26 @@ isMovieSaved(movieId: number) {
 
   // Recommendations
 
-  recommendations(
-    genre?: string,
-    releaseYear?: number,
-    limit = 10
-  ) {
+  // recommendations(
+  //   genre?: string,
+  //   releaseYear?: number,
+  //   limit = 10
+  // ) {
 
-    let params = new HttpParams()
-      .set('limit', limit);
+  //   let params = new HttpParams()
+  //     .set('limit', limit);
 
-    if (genre) {
-      params = params.set('genre', genre);
-    }
+  //   if (genre) {
+  //     params = params.set('genre', genre);
+  //   }
 
-    if (releaseYear) {
-      params = params.set('releaseYear', releaseYear);
-    }
+  //   if (releaseYear) {
+  //     params = params.set('releaseYear', releaseYear);
+  //   }
 
-    return this.http.get<Recommendation[]>(
-      `${API}/recommendations/user/${this.auth.userId}`,
-      { params }
-    );
-  }
+  //   return this.http.get<Recommendation[]>(
+  //     `${API}/recommendations/user/${this.auth.userId}`,
+  //     { params }
+  //   );
+  // }
 }

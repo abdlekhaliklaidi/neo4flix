@@ -93,8 +93,14 @@ export class SavedMoviesComponent
               m => m.id !== movie.id
             );
 
-          this.msg =
-            `"${movie.title}" removed from saved movies.`;
+          this.msg = `"${movie.title}" removed from saved movies.`;
+          setTimeout(() => {
+
+        this.msg = '';
+
+        this.cdr.detectChanges();
+
+      }, 2000);
 
           this.cdr.detectChanges();
 

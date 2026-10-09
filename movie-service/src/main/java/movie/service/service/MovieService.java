@@ -33,27 +33,41 @@ public class MovieService {
 
     public Movie createMovie(Movie movie) {
 
-        if (movie.getTitle() == null ||
-                movie.getTitle().trim().isEmpty()) {
-
-            throw new IllegalArgumentException(
-                    "Movie title is required"
-            );
-        }
-
-        if (movie.getReleaseYear() == null) {
-
-            throw new IllegalArgumentException(
-                    "Release year is required"
-            );
-        }
-
-        if (movie.getAverageRating() == null) {
-            movie.setAverageRating(0.0);
-        }
-
-        return movieRepository.save(movie);
+    if (movie.getTitle() == null ||
+            movie.getTitle().trim().isEmpty()) {
+        throw new IllegalArgumentException(
+                "Movie title is required"
+        );
     }
+
+    if (movie.getReleaseYear() == null) {
+        throw new IllegalArgumentException(
+                "Release year is required"
+        );
+    }
+
+    if (movie.getReleaseYear() < 1888 ||
+            movie.getReleaseYear() > 2100) {
+        throw new IllegalArgumentException(
+                "Invalid release year"
+        );
+    }
+
+    movie.setId(movieRepository.findNextMovieId());
+
+    movie.setTitle(movie.getTitle().trim());
+
+    if (movie.getDescription() == null) {
+        movie.setDescription("");
+    }
+
+    if (movie.getAverageRating() == null) {
+        movie.setAverageRating(0.0);
+    }
+    
+
+    return movieRepository.save(movie);
+}
 
     public Movie updateMovie(Long id, Movie movie) {
 

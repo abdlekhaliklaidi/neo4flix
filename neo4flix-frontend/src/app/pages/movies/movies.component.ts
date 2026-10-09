@@ -29,12 +29,27 @@ export class MoviesComponent implements OnInit {
 
   showAddMovie = false;
 
-  newMovie = {
-    title: '',
-    releaseYear: new Date().getFullYear(),
-    description: '',
-    genres: [] as { name: string }[]
-  };
+  availableGenres: string[] = [
+  'Action',
+  'Adventure',
+  'Animation',
+  'Comedy',
+  'Crime',
+  'Drama',
+  'Fantasy',
+  'Horror',
+  'Mystery',
+  'Romance',
+  'Science Fiction',
+  'Thriller'
+];
+
+newMovie = {
+  title: '',
+  releaseYear: new Date().getFullYear(),
+  description: '',
+  genreName: ''
+};
 
   constructor(
     private api: ApiService,
@@ -154,7 +169,7 @@ export class MoviesComponent implements OnInit {
 
         this.savedMovieIds.add(movie.id);
 
-        this.msg = `✅ "${movie.title}" saved successfully.`;
+        this.msg = `"${movie.title}" saved successfully.`;
         setTimeout(() => {
 
         this.msg = '';
@@ -268,11 +283,21 @@ export class MoviesComponent implements OnInit {
 
     this.cdr.detectChanges();
 
+    console.log('Movie selected for rating:', movie);
+    console.log('Movie ID:', movie?.id);
+    console.log('Score:', score);
+
+    if (movie?.id == null || !Number.isFinite(Number(movie.id))) {
+        this.msg = 'Cannot rate this movie: invalid movie ID.';
+        this.cdr.detectChanges();
+        return;
+    }
+
     this.api.rate(movie.id, score).subscribe({
 
       next: () => {
 
-        this.msg = `✅ You rated "${movie.title}" ${score}/5 successfully.`;
+        this.msg = `You rated "${movie.title}" ${score}/5 successfully.`;
          setTimeout(() => {
 
         this.msg = '';
@@ -304,7 +329,7 @@ export class MoviesComponent implements OnInit {
         this.msg =
           typeof error.error === 'string'
             ? error.error
-            : '❌ Unable to save your rating.';
+            : 'Unable to save your rating.';
 
         this.cdr.detectChanges();
       }
@@ -314,38 +339,40 @@ export class MoviesComponent implements OnInit {
 
   createMovie(): void {
 
-    const title =
-      this.newMovie.title.trim();
+    const title = this.newMovie.title.trim();
 
-    const description =
-      this.newMovie.description.trim();
+    const description = this.newMovie.description.trim();
 
-    const releaseYear =
-      Number(this.newMovie.releaseYear);
+    const releaseYear = Number(this.newMovie.releaseYear);
+
+    const genreName = this.newMovie.genreName;
+
 
     if (!title) {
 
-      this.msg =
-        'Please enter a movie title.';
+      this.msg = 'Please enter a movie title.';
 
       return;
     }
 
     if (!releaseYear || releaseYear < 1888) {
 
-      this.msg =
-        'Please enter a valid release year.';
+      this.msg = 'Please enter a valid release year.';
 
       return;
     }
 
     if (!description) {
 
-      this.msg =
-        'Please enter a movie description.';
+      this.msg = 'Please enter a movie description.';
 
       return;
     }
+
+    if (!genreName) {
+    this.msg = 'Please select a movie genre.';
+    return;
+  }
 
     this.loading = true;
     this.msg = '';
@@ -354,7 +381,11 @@ export class MoviesComponent implements OnInit {
       title,
       releaseYear,
       description,
-      genres: this.newMovie.genres
+      genres: [
+      {
+        name: genreName
+      }
+    ]
     };
 
     this.api.createMovie(movieData).subscribe({
@@ -368,8 +399,14 @@ export class MoviesComponent implements OnInit {
 
         this.loading = false;
 
-        this.msg =
-          `✅ "${movie.title}" added successfully.`;
+        this.msg = `"${movie.title}" added successfully.`;
+        setTimeout(() => {
+
+        this.msg = '';
+
+        this.cdr.detectChanges();
+
+      }, 2000);
 
         this.showAddMovie = false;
 
@@ -392,7 +429,7 @@ export class MoviesComponent implements OnInit {
         this.msg =
           typeof error.error === 'string'
             ? error.error
-            : '❌ Unable to create this movie.';
+            : 'Unable to create this movie.';
 
         this.cdr.detectChanges();
       }
@@ -406,7 +443,7 @@ export class MoviesComponent implements OnInit {
       title: '',
       releaseYear: new Date().getFullYear(),
       description: '',
-      genres: []
+      genreName: ''
     };
   }
 
@@ -429,7 +466,10 @@ export class MoviesComponent implements OnInit {
 
     this.auth.logout();
   }
-
+  
+  goToRecommendations(): void {
+  this.router.navigate(['/recommendations']);
+}
 
   private handleError(error: any): void {
 
@@ -442,13 +482,11 @@ export class MoviesComponent implements OnInit {
 
     if (error.status === 0) {
 
-      this.msg =
-        'Cannot connect to movie server.';
+      this.msg = 'Cannot connect to movie server.';
 
       return;
     }
 
-    this.msg =
-      'Unable to load movies.';
+    this.msg = 'Unable to load movies.';
   }
 }

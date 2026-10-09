@@ -20,6 +20,14 @@
         Ratings
       </button>
 
+      <button class="ratings-btn"
+       type="button"
+       (click)="goToRecommendations()"
+       >
+        ✨ Recommendations
+       </button>
+
+
       <!-- SAVED MOVIES -->
 
       <button
@@ -171,6 +179,24 @@
 
         </div>
 
+        <div class="form-group">
+    <label>Genre</label>
+
+    <select [(ngModel)]="newMovie.genreName">
+
+      <option value="" disabled>
+        Select a genre
+      </option>
+
+      @for (genre of availableGenres; track genre) {
+        <option [value]="genre">
+          {{ genre }}
+        </option>
+      }
+
+    </select>
+    
+    </div>
 
         <!-- ACTIONS -->
 
