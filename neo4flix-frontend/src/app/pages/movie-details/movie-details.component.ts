@@ -33,57 +33,45 @@ export class MovieDetailsComponent implements OnInit {
   ) {}
 
 
- ngOnInit() {
+ ngOnInit(): void {
 
-  // if (!isPlatformBrowser(this.platformId)) {
-  //   return;
-  // }
+  const idParam = this.route.snapshot.paramMap.get('id');
 
-  const id = Number(
-    this.route.snapshot.paramMap.get('id')
-  );
+  // Invalid ID format -> 400
+  if (!idParam || !/^[1-9]\d*$/.test(idParam)) {
 
-  console.log('DETAIL MOVIE ID:', id);
-
-  if (!id || Number.isNaN(id)) {
-
-    this.loading = false;
-    this.msg = 'Invalid movie ID.';
+    this.router.navigate(['/error/400'], {
+      replaceUrl: true
+    });
 
     return;
   }
+
+  const id = Number(idParam);
+
+  this.loading = true;
 
   this.api.movie(id).subscribe({
 
     next: movie => {
 
-      console.log(
-        'MOVIE DETAILS RESPONSE:',
-        movie
-      );
-
-      this.movie = movie;
       this.loading = false;
 
+      if (!movie || movie.id == null) {
+
+        this.router.navigate(['/error/404'], {
+          replaceUrl: true
+        });
+
+        return;
+      }
+
+      this.movie = movie;
+
       this.cdr.detectChanges();
-
-      console.log(
-        'AFTER SETTING MOVIE:',
-        this.movie
-      );
-
-      console.log(
-        'AFTER SETTING LOADING:',
-        this.loading
-      );
     },
 
     error: error => {
-
-      console.error(
-        'MOVIE DETAILS ERROR:',
-        error
-      );
 
       this.loading = false;
       this.movie = null;
@@ -91,27 +79,37 @@ export class MovieDetailsComponent implements OnInit {
       this.cdr.detectChanges();
 
       if (error.status === 401) {
-
         this.auth.logout();
         return;
       }
 
-      if (error.status === 404) {
+      if (error.status === 400) {
+        this.router.navigate(['/error/400']);
+        return;
+      }
 
-        this.msg = 'Movie not found.';
+      if (error.status === 403) {
+        this.router.navigate(['/error/403']);
+        return;
+      }
+
+      if (error.status === 404) {
+        this.router.navigate(['/error/404']);
+        return;
+      }
+
+      if (error.status >= 500) {
+        this.router.navigate(['/error/500']);
         return;
       }
 
       if (error.status === 0) {
-
         this.msg =
           'Cannot connect to movie-service.';
-
         return;
       }
 
-      this.msg =
-        'Unable to load movie.';
+      this.msg = 'Unable to load movie.';
     }
 
   });
@@ -146,20 +144,39 @@ rate(score: number): void {
 
     error: error => {
 
-      if (error.status === 401) {
+  this.loading = false;
+  this.movie = null;
 
-        this.auth.logout();
-        return;
+  this.cdr.detectChanges();
 
-      }
-      this.cdr.detectChanges();
-      
-      this.msg =
-        typeof error.error === 'string'
-          ? error.error
-          : '❌ Unable to save your rating.';
+  if (error.status === 400) {
+    this.router.navigate(['/error/400']);
+    return;
+  }
 
-    }
+  if (error.status === 403) {
+    this.router.navigate(['/error/403']);
+    return;
+  }
+
+  if (error.status === 404) {
+    this.router.navigate(['/error/404']);
+    return;
+  }
+
+  if (error.status >= 500) {
+    this.router.navigate(['/error/500']);
+    return;
+  }
+
+  if (error.status === 0) {
+    this.msg = 'Cannot connect to movie-service.';
+    return;
+  }
+
+  this.msg = 'Unable to load movie.';
+}
+
 
   });
 

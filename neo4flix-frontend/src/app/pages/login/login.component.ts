@@ -116,4 +116,9 @@ export class LoginComponent {
 
     });
   }
+
+  continueAsGuest(): void {
+     this.router.navigate(['/movies']);
+  }
+
 }

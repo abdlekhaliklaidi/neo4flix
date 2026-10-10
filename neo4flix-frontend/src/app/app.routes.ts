@@ -39,9 +39,9 @@ export const routes: Routes = [
   {
     path: 'movies',
 
-    canActivate: [
-      authGuard
-    ],
+    // canActivate: [
+    //   authGuard
+    // ],
 
     loadComponent: () =>
       import(
@@ -54,9 +54,9 @@ export const routes: Routes = [
   {
     path: 'movies/:id',
 
-    canActivate: [
-      authGuard
-    ],
+    // canActivate: [
+    //   authGuard
+    // ],
 
     loadComponent: () =>
       import(
@@ -109,6 +109,19 @@ export const routes: Routes = [
       ).then(
         m => m.Recommendations
       )
+  },
+
+  {
+  path: 'error/:code',
+
+  canActivate: [authGuard],
+
+  loadComponent: () =>
+    import(
+      './pages/error/error.component'
+    ).then(
+      m => m.ErrorComponent
+    )
   },
 
   {

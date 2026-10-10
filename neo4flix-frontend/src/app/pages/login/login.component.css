@@ -105,3 +105,26 @@
     a:hover {
       color: #e50914;
     }
+
+    .guest-button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+
+  background: transparent;
+  color: #ffffff;
+
+  border: 1px solid #555;
+  border-radius: 6px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.guest-button:hover {
+  background: #252525;
+  border-color: #e50914;
+}

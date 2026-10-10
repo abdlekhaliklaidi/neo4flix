@@ -1,10 +1,12 @@
 import { inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
+
 import {
   HttpInterceptorFn,
   HttpErrorResponse
 } from '@angular/common/http';
+
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 
@@ -33,13 +35,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
     catchError((error: HttpErrorResponse) => {
 
-      if (
-        error.status === 401 &&
-        token
-      ) {
+      if (error.status === 401 && token) {
 
         console.warn(
-          'JWT invalid or expired. Logging out...'
+          'Authentication failed. Checking session...'
         );
 
         localStorage.removeItem('user');

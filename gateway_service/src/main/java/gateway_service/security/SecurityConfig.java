@@ -64,6 +64,7 @@ public class SecurityConfig {
                     
                     .pathMatchers(
                                 HttpMethod.GET,
+                                "/api/movies",
                                 "/api/movies/**"
                         ).permitAll()
 

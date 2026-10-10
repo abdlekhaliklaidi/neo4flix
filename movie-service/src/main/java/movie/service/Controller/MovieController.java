@@ -37,6 +37,10 @@ public class MovieController {
             @PathVariable Long id
     ) {
 
+        if (id == null || id <= 0) {
+           return ResponseEntity.badRequest().build();
+        }
+
         return movieService.getMovieById(id)
                 .map(ResponseEntity::ok)
                 .orElse(
