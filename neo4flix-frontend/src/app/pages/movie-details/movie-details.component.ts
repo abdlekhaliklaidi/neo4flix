@@ -115,8 +115,31 @@ export class MovieDetailsComponent implements OnInit {
   });
 }
 
+isLoggedIn(): boolean {
+  if (typeof localStorage === 'undefined') {
+    return false;
+  }
+
+  const token = localStorage.getItem('token');
+  const userId = this.auth.userId;
+
+  return !!(
+    token &&
+    userId &&
+    String(userId) !== 'null' &&
+    String(userId) !== 'undefined'
+  );
+}
 
 rate(score: number): void {
+
+  if (!this.isLoggedIn()) {
+    this.msg = 'Please log in to rate movies.';
+    this.cdr.detectChanges();
+
+    this.router.navigate(['/login']);
+    return;
+  }
 
   if (!this.movie) {
     return;
