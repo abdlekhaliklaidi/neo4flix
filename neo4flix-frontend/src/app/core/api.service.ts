@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { AuthService } from './auth.service';
+import { Observable, throwError } from 'rxjs';
 
 const API = 'http://localhost:8080/api';
 
 export interface Genre {
-  // id: number;
   name: string;
 }
 
@@ -46,21 +46,50 @@ export class ApiService {
     private auth: AuthService
   ) {}
 
+ 
+  private getAuthenticatedUserId(): string {
 
-  // Movies
+    const token =
+      typeof localStorage !== 'undefined'
+        ? localStorage.getItem('token')
+        : null;
 
-  // Get all movies
-  movies() {
-    return this.http.get<Movie[]>(`${API}/movies`);
+    const userId = this.auth.userId;
+
+    if (
+      !token ||
+      !userId ||
+      String(userId).trim() === '' ||
+      String(userId) === 'null' ||
+      String(userId) === 'undefined'
+    ) {
+      throw new Error(
+        'You must log in to perform this action.'
+      );
+    }
+
+    return String(userId);
   }
 
-  // Get one movie by ID
-  movie(id: number) {
-    return this.http.get<Movie>(`${API}/movies/${id}`);
+  // ==================== MOVIES ====================
+
+  movies(): Observable<Movie[]> {
+
+    return this.http.get<Movie[]>(
+      `${API}/movies`
+    );
   }
 
-  // Search movies by title
-  searchTitle(title: string) {
+  movie(id: number): Observable<Movie> {
+
+    return this.http.get<Movie>(
+      `${API}/movies/${id}`
+    );
+  }
+
+  
+  searchTitle(title: string): Observable<Movie[]> {
+
     return this.http.get<Movie[]>(
       `${API}/movies/search/title`,
       {
@@ -71,8 +100,9 @@ export class ApiService {
     );
   }
 
-  // Search movies by genre
-  searchGenre(genre: string) {
+  
+  searchGenre(genre: string): Observable<Movie[]> {
+
     return this.http.get<Movie[]>(
       `${API}/movies/search/genre`,
       {
@@ -83,8 +113,9 @@ export class ApiService {
     );
   }
 
-  // Search movies by year
-  searchYear(year: number) {
+  
+  searchYear(year: number): Observable<Movie[]> {
+
     return this.http.get<Movie[]>(
       `${API}/movies/search/year`,
       {
@@ -94,105 +125,167 @@ export class ApiService {
       }
     );
   }
-  
+
+
   createMovie(movie: {
-  title: string;
-  releaseYear: number;
-  description: string;
-  genres?: Genre[];
-}) {
+    title: string;
+    releaseYear: number;
+    description: string;
+    genres?: Genre[];
+  }): Observable<Movie> {
 
-  return this.http.post<Movie>(
-    `${API}/movies`,
-    movie
-  );
-}
+    this.getAuthenticatedUserId();
 
-  saveMovie(movieId: number) {
+    return this.http.post<Movie>(
+      `${API}/movies`,
+      movie
+    );
+  }
 
-  return this.http.post<void>(
-    `${API}/saved-movies/${this.auth.userId}/${movieId}`,
-    null
-  );
-}
+  updateMovie(
+    movieId: number,
+    movie: {
+      title: string;
+      releaseYear: number;
+      description: string;
+      genres?: Genre[];
+    }
+  ): Observable<Movie> {
+
+    this.getAuthenticatedUserId();
+
+    return this.http.put<Movie>(
+      `${API}/movies/${movieId}`,
+      movie
+    );
+  }
+
+  
+  deleteMovie(movieId: number): Observable<void> {
+
+    this.getAuthenticatedUserId();
+
+    return this.http.delete<void>(
+      `${API}/movies/${movieId}`
+    );
+  }
+
+  // ==================== SAVED MOVIES / WATCHLIST ====================
+
+  saveMovie(movieId: number): Observable<void> {
+
+    const userId = this.getAuthenticatedUserId();
+
+    return this.http.post<void>(
+      `${API}/saved-movies/${userId}/${movieId}`,
+      null
+    );
+  }
+
+  removeSavedMovie(movieId: number): Observable<void> {
+
+    const userId = this.getAuthenticatedUserId();
+
+    return this.http.delete<void>(
+      `${API}/saved-movies/${userId}/${movieId}`
+    );
+  }
 
 
-// Remove saved movie
-removeSavedMovie(movieId: number) {
+  savedMovies(): Observable<Movie[]> {
 
-  return this.http.delete<void>(
-    `${API}/saved-movies/${this.auth.userId}/${movieId}`
-  );
-}
+    const userId = this.getAuthenticatedUserId();
 
-
-savedMovies() {
-
-  return this.http.get<Movie[]>(
-    `${API}/saved-movies/${this.auth.userId}`
-  );
-}
+    return this.http.get<Movie[]>(
+      `${API}/saved-movies/${userId}`
+    );
+  }
 
 
-// Check if movie is saved
-isMovieSaved(movieId: number) {
+  isMovieSaved(movieId: number): Observable<boolean> {
 
-  return this.http.get<boolean>(
-    `${API}/saved-movies/${this.auth.userId}/${movieId}`
-  );
-}
+    const userId = this.getAuthenticatedUserId();
 
+    return this.http.get<boolean>(
+      `${API}/saved-movies/${userId}/${movieId}`
+    );
+  }
 
-  // Rate a movie
-  rate(movieId: number, score: number) {
-    
-    const userId = this.auth.userId;
+  // ==================== RATINGS ====================
 
-    if (userId == null || movieId == null ||
-      !Number.isFinite(Number(movieId))) {
-      throw new Error('User ID or Movie ID is missing.');
+  rate(
+    movieId: number,
+    score: number
+  ): Observable<Rating> {
+
+    const userId = this.getAuthenticatedUserId();
+
+    if (
+      !Number.isFinite(movieId) ||
+      movieId <= 0
+    ) {
+      throw new Error('Invalid movie ID.');
+    }
+
+    if (
+      !Number.isFinite(score) ||
+      score < 1 ||
+      score > 5
+    ) {
+      throw new Error(
+        'Rating must be between 1 and 5.'
+      );
     }
 
     const params = new HttpParams()
-      .set('userId', this.auth.userId!)
+      .set('userId', userId)
       .set('movieId', movieId)
       .set('score', score);
 
     return this.http.post<Rating>(
       `${API}/ratings`,
       null,
-      { params }
+      {
+        params
+      }
     );
   }
 
-  // Get current user's ratings
-  myRatings() {
+ 
+  myRatings(): Observable<Rating[]> {
+
+    const userId = this.getAuthenticatedUserId();
 
     return this.http.get<Rating[]>(
-      `${API}/ratings/user/${this.auth.userId}`
+      `${API}/ratings/user/${userId}`
     );
   }
 
-  // Delete a rating
-  deleteRating(movieId: number) {
+  deleteRating(movieId: number): Observable<void> {
+
+    const userId = this.getAuthenticatedUserId();
 
     const params = new HttpParams()
-      .set('userId', this.auth.userId!)
+      .set('userId', userId)
       .set('movieId', movieId);
 
     return this.http.delete<void>(
       `${API}/ratings`,
-      { params }
+      {
+        params
+      }
     );
   }
 
-  // Recommendations
+  // ==================== RECOMMENDATIONS ====================
 
   recommendations(
     genre?: string,
     releaseYear?: number,
     limit = 10
-  ) {
+  ): Observable<Recommendation[]> {
+
+    const userId = this.getAuthenticatedUserId();
 
     let params = new HttpParams()
       .set('limit', limit);
@@ -202,12 +295,17 @@ isMovieSaved(movieId: number) {
     }
 
     if (releaseYear) {
-      params = params.set('releaseYear', releaseYear);
+      params = params.set(
+        'releaseYear',
+        releaseYear
+      );
     }
 
     return this.http.get<Recommendation[]>(
-      `${API}/recommendations/user/${this.auth.userId}`,
-      { params }
+      `${API}/recommendations/user/${userId}`,
+      {
+        params
+      }
     );
   }
 }

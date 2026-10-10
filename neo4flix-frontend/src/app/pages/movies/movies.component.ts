@@ -59,9 +59,28 @@ newMovie = {
   ) {}
 
   ngOnInit(): void {
-    this.load();
+  this.load();
+
+  if (this.isLoggedIn()) {
     this.loadSavedMovies();
   }
+}
+
+  isLoggedIn(): boolean {
+  if (typeof localStorage === 'undefined') {
+    return false;
+  }
+
+  const token = localStorage.getItem('token');
+  const userId = this.auth.userId;
+
+  return !!(
+    token &&
+    userId &&
+    String(userId) !== 'null' &&
+    String(userId) !== 'undefined'
+  );
+}
 
   load(): void {
 
@@ -95,29 +114,45 @@ newMovie = {
 
   loadSavedMovies(): void {
 
-    this.api.savedMovies().subscribe({
-
-      next: (movies) => {
-
-        this.savedMovieIds = new Set(
-          movies.map(movie => movie.id)
-        );
-
-        this.cdr.detectChanges();
-      },
-
-      error: (error) => {
-
-        if (error.status === 401) {
-          this.auth.logout();
-        }
-
-      }
-
-    });
+  // Guest cannot load personal watchlist
+  if (!this.isLoggedIn()) {
+    this.savedMovieIds.clear();
+    return;
   }
 
+  this.api.savedMovies().subscribe({
+
+    next: (movies) => {
+
+      this.savedMovieIds = new Set(
+        movies.map(movie => movie.id)
+      );
+
+      this.cdr.detectChanges();
+    },
+
+    error: (error) => {
+
+      console.error(
+        'Unable to load saved movies:',
+        error
+      );
+
+      // Do not log out automatically here.
+      this.cdr.detectChanges();
+    }
+  });
+}
+
   saveMovie(movie: Movie): void {
+
+    if (!this.isLoggedIn()) {
+    this.msg = 'Please log in to save movies.';
+    this.cdr.detectChanges();
+
+    this.router.navigate(['/login']);
+    return;
+  }
 
     if (this.savedMovieIds.has(movie.id)) {
 
@@ -141,12 +176,12 @@ newMovie = {
 
         error: (error) => {
 
-          if (error.status === 401) {
-            this.auth.logout();
-            return;
-          }
+          this.msg =
+          error.status === 401
+            ? 'Your session has expired. Please log in again.'
+            : 'Unable to remove this movie.';
 
-          this.msg = 'Unable to remove this movie.';
+        this.cdr.detectChanges();
         setTimeout(() => {
 
         this.msg = '';
@@ -183,16 +218,12 @@ newMovie = {
 
       error: (error) => {
 
-        if (error.status === 401) {
-          this.auth.logout();
-          return;
-        }
+        this.msg =
+        error.status === 401
+          ? 'Your session has expired. Please log in again.'
+          : 'Unable to save this movie.';
 
-        this.msg = typeof error.error === 'string'
-            ? error.error
-            : 'Unable to save this movie.';
-
-        this.cdr.detectChanges();
+      this.cdr.detectChanges();
       }
 
     });
@@ -271,6 +302,14 @@ newMovie = {
   }
 
   rate(movie: Movie, score: number): void {
+
+    if (!this.isLoggedIn()) {
+    this.msg = 'Please log in to rate movies.';
+    this.cdr.detectChanges();
+
+    this.router.navigate(['/login']);
+    return;
+  }
 
     this.msg = `Saving your rating for "${movie.title}"`;
      setTimeout(() => {

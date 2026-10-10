@@ -11,7 +11,7 @@
     <div class="user-section">
 
       <!-- RATINGS -->
-
+      @if (isLoggedIn()) {
       <button
         class="ratings-btn"
         type="button"
@@ -19,17 +19,19 @@
       >
         Ratings
       </button>
-
+    }
+      
+       @if (isLoggedIn()) {
       <button class="ratings-btn"
        type="button"
        (click)="goToRecommendations()"
        >
         Recommendations
        </button>
-
+      }
 
       <!-- SAVED MOVIES -->
-
+      @if (isLoggedIn()) {
       <button
         class="saved-btn"
         type="button"
@@ -37,7 +39,7 @@
       >
         Saved Movies
       </button>
-
+    }
       <!-- USER -->
 
       <div class="user-info">
@@ -53,7 +55,7 @@
       </div>
 
       <!-- LOGOUT -->
-
+      @if (isLoggedIn()) {
       <button
         class="logout-btn"
         type="button"
@@ -61,11 +63,10 @@
       >
         Logout
       </button>
-
+    }
     </div>
 
   </header>
-
 
   <!-- MAIN -->
 
@@ -75,6 +76,7 @@
 
     
     <section class="hero">
+      @if (isLoggedIn()) {
       <button
          class="add-movie-btn"
          type="button"
@@ -82,6 +84,8 @@
        >
          ＋ Add Movie
        </button>
+
+      }
       
       <h1>
         Movies
