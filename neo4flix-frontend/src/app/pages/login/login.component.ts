@@ -24,7 +24,7 @@ export class LoginComponent {
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
-
+  
   submit() {
 
     this.error = '';

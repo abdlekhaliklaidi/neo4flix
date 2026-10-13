@@ -18,6 +18,9 @@ COPY --from=build /app/dist/neo4flix-frontend/browser/ /usr/share/nginx/html/
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+COPY ssl/localhost.crt /etc/nginx/ssl/localhost.crt
+COPY ssl/localhost.key /etc/nginx/ssl/localhost.key
+
+EXPOSE 80 443
 
 CMD ["nginx", "-g", "daemon off;"]

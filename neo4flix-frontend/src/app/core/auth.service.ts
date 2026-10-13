@@ -25,7 +25,9 @@ export interface RegisterResponse {
   role: string;
 }
 
-const API = 'http://localhost:8080/api';
+// const API = 'http://localhost:8080/api';
+// const API = 'https://localhost:8444/api';
+const API = '/api';
 
 @Injectable({
   providedIn: 'root'

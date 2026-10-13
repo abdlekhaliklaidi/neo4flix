@@ -3,7 +3,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { Observable, throwError } from 'rxjs';
 
-const API = 'http://localhost:8080/api';
+// const API = 'http://localhost:8080/api';
+// const API = 'https://localhost:8444/api';
+const API = '/api';
 
 export interface Genre {
   name: string;
