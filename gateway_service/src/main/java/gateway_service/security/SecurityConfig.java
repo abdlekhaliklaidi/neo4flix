@@ -90,7 +90,10 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(
-                List.of("http://localhost:4200")
+        List.of(
+        "http://localhost:4200",
+        "https://localhost:8443"
+                )
         );
 
         config.setAllowedMethods(
