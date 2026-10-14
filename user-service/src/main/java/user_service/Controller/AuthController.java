@@ -37,6 +37,14 @@ public class AuthController {
                         "Email is already registered"
                 );
             }
+            
+            // Check username uniqueness
+            if (userRepository.existsByUsername(request.getUsername())) {
+
+                throw new IllegalArgumentException(
+                        "Username is already registered"
+                );
+            }
 
 
             return ResponseEntity.ok(
