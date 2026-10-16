@@ -51,6 +51,8 @@ newMovie = {
   genreName: ''
 };
 
+editingMovieId: number | null = null;
+
   constructor(
     private api: ApiService,
     public auth: AuthService,
@@ -375,6 +377,74 @@ newMovie = {
 
     });
   }
+  
+  editMovie(movie: Movie): void {
+
+  this.editingMovieId = movie.id;
+
+  this.newMovie = {
+    title: movie.title,
+    releaseYear: movie.releaseYear,
+    description: movie.description ?? '',
+    genreName: movie.genres?.[0]?.name ?? ''
+  };
+
+  this.showAddMovie = true;
+  this.msg = '';
+
+  this.cdr.detectChanges();
+  }
+
+  deleteMovie(movie: Movie): void {
+
+  const confirmed = confirm(
+    `Are you sure you want to delete "${movie.title}"?`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  this.loading = true;
+  this.msg = '';
+
+  this.api.deleteMovie(movie.id).subscribe({
+
+    next: () => {
+
+      this.movies = this.movies.filter(
+        item => item.id !== movie.id
+      );
+
+      this.savedMovieIds.delete(movie.id);
+
+      this.loading = false;
+
+      this.msg = `"${movie.title}" deleted successfully.`;
+
+      this.cdr.detectChanges();
+
+      setTimeout(() => {
+        this.msg = '';
+        this.cdr.detectChanges();
+      }, 2000);
+    },
+
+    error: (error) => {
+
+      this.loading = false;
+
+      if (error.status === 401) {
+        this.auth.logout();
+        return;
+      }
+
+      this.msg = 'Unable to delete this movie.';
+
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   createMovie(): void {
 
@@ -427,54 +497,102 @@ newMovie = {
     ]
     };
 
-    this.api.createMovie(movieData).subscribe({
+    if (this.editingMovieId !== null) {
 
-      next: (movie) => {
+  this.api.updateMovie(
+    this.editingMovieId,
+    movieData
+  ).subscribe({
 
-        this.movies = [
-          movie,
-          ...this.movies
-        ];
+    next: (updatedMovie) => {
 
-        this.loading = false;
+      this.movies = this.movies.map(movie =>
+        movie.id === updatedMovie.id
+          ? updatedMovie
+          : movie
+      );
 
-        this.msg = `"${movie.title}" added successfully.`;
-        setTimeout(() => {
+      this.loading = false;
+      this.showAddMovie = false;
+      this.editingMovieId = null;
 
+      this.resetNewMovie();
+
+      this.msg = `"${updatedMovie.title}" updated successfully.`;
+
+      this.cdr.detectChanges();
+
+      setTimeout(() => {
         this.msg = '';
-
         this.cdr.detectChanges();
-
       }, 2000);
+    },
 
-        this.showAddMovie = false;
+    error: (error) => {
 
-        this.resetNewMovie();
+      this.loading = false;
 
-        this.cdr.detectChanges();
-      },
-
-      error: (error) => {
-
-        this.loading = false;
-
-        if (error.status === 401) {
-
-          this.auth.logout();
-
-          return;
-        }
-
-        this.msg =
-          typeof error.error === 'string'
-            ? error.error
-            : 'Unable to create this movie.';
-
-        this.cdr.detectChanges();
+      if (error.status === 401) {
+        this.auth.logout();
+        return;
       }
 
-    });
+      this.msg = 'Unable to update this movie.';
+
+      this.cdr.detectChanges();
+    }
+
+  });
+
+  return;
+}
+
+// CREATE MOVIE
+this.api.createMovie(movieData).subscribe({
+
+  next: (movie) => {
+
+    this.movies = [
+      movie,
+      ...this.movies
+    ];
+
+    this.loading = false;
+
+    this.msg = `"${movie.title}" added successfully.`;
+
+    this.showAddMovie = false;
+    this.editingMovieId = null;
+
+    this.resetNewMovie();
+
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.msg = '';
+      this.cdr.detectChanges();
+    }, 2000);
+  },
+
+  error: (error) => {
+
+    this.loading = false;
+
+    if (error.status === 401) {
+      this.auth.logout();
+      return;
+    }
+
+    this.msg =
+      typeof error.error === 'string'
+        ? error.error
+        : 'Unable to create this movie.';
+
+    this.cdr.detectChanges();
   }
+
+  });
+}
 
   resetNewMovie(): void {
 

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ErrorStateService } from '../../core/error-state.service';
 
 @Component({
   selector: 'app-error',
@@ -75,7 +76,8 @@ export class ErrorComponent {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private errorState: ErrorStateService
   ) {}
 
   ngOnInit(): void {
@@ -130,6 +132,9 @@ export class ErrorComponent {
   }
 
   goToMovies(): void {
-    this.router.navigate(['/movies']);
+
+  this.errorState.clearError();
+
+  this.router.navigate(['/movies']);
   }
 }

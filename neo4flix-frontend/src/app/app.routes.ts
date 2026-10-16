@@ -4,6 +4,9 @@ import {
   guestGuard
 } from './core/auth-guard';
 
+import { ErrorGuard } from './core/error.guard';
+
+
 export const routes: Routes = [
 
   {
@@ -114,7 +117,9 @@ export const routes: Routes = [
   {
   path: 'error/:code',
 
-  canActivate: [authGuard],
+  canActivate: [
+    ErrorGuard
+  ],
 
   loadComponent: () =>
     import(

@@ -161,7 +161,6 @@ export class ApiService {
       movie
     );
   }
-
   
   deleteMovie(movieId: number): Observable<void> {
 
@@ -212,7 +211,7 @@ export class ApiService {
       `${API}/saved-movies/${userId}/${movieId}`
     );
   }
-
+  
   // ==================== RATINGS ====================
 
   rate(

@@ -109,12 +109,14 @@
           <div>
 
             <h2>
-              Add a Movie
-            </h2>
+  {{ editingMovieId !== null ? 'Edit Movie' : 'Add a Movie' }}
+</h2>
 
-            <p>
-              Add a new movie to Neo4flix.
-            </p>
+<p>
+  {{ editingMovieId !== null
+      ? 'Update movie information.'
+      : 'Add a new movie to Neo4flix.' }}
+</p>
 
           </div>
 
@@ -207,25 +209,25 @@
         <div class="form-actions">
 
           <button
-            type="button"
-            class="cancel-btn"
-            (click)="showAddMovie = false"
-          >
-            Cancel
-          </button>
+  type="button"
+  class="cancel-btn"
+  (click)="showAddMovie = false; editingMovieId = null; resetNewMovie()"
+>
+  Cancel
+</button>
 
           <button
-            type="button"
-            class="create-btn"
-            [disabled]="loading"
-            (click)="createMovie()"
-          >
-            @if (loading) {
-              Adding...
-            } @else {
-              Add Movie
-            }
-          </button>
+  type="button"
+  class="create-btn"
+  [disabled]="loading"
+  (click)="createMovie()"
+>
+  @if (loading) {
+    Saving...
+  } @else {
+    {{ editingMovieId !== null ? 'Update Movie' : 'Add Movie' }}
+  }
+</button>
 
         </div>
 
@@ -306,9 +308,9 @@
 
     }
 
-
+    
     <!-- MOVIES -->
-
+    
     @if (!loading) {
 
       <section class="movies-grid">
@@ -324,28 +326,59 @@
 
             <div class="movie-top">
 
-              <div>
+  <div class="movie-heading">
 
-                <h2>
-                  {{ movie.title }}
-                </h2>
+    <h2>
+      {{ movie.title }}
+    </h2>
 
-                <span class="year">
-                  {{ movie.releaseYear }}
-                </span>
+    <span class="year">
+      {{ movie.releaseYear }}
+    </span>
 
-              </div>
+  </div>
 
+  <div class="movie-actions">
 
-              <div class="rating">
+    <button
+      type="button"
+      class="details-btn icon-btn"
+      title="View Details"
+      aria-label="View Details"
+      (click)="details(movie.id)"
+    >
+      👁️
+    </button>
 
-                ⭐
+    @if (isLoggedIn()) {
 
-                {{
-                  movie.averageRating ?? 'N/A'
-                }}
+      <button
+        type="button"
+        class="edit-btn icon-btn"
+        title="Edit Movie"
+        aria-label="Edit Movie"
+        (click)="editMovie(movie)"
+      >
+        ✏️
+      </button>
 
-              </div>
+      <button
+        type="button"
+        class="delete-btn icon-btn"
+        title="Delete Movie"
+        aria-label="Delete Movie"
+        (click)="deleteMovie(movie)"
+      >
+        🗑️
+      </button>
+
+    }
+
+  </div>
+
+  <div class="rating">
+    ⭐ {{ movie.averageRating ?? 'N/A' }}
+  </div>
 
             </div>
 
@@ -381,18 +414,8 @@
 
             <div class="actions">
 
-              <button
-                type="button"
-                class="details-btn"
-                (click)="details(movie.id)"
-              >
-                View Details
-              </button>
 
-
-              
-            </div>
-            
+</div>
             
             <!-- RATE -->
             
