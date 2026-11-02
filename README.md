@@ -126,7 +126,7 @@ Exemple d'architecture Docker :
 
 neo4flix
 │
-├── frontend
+├── neo4flix-frontend
 ├── movie-service
 ├── user-service
 ├── rating-service
@@ -151,6 +151,7 @@ docker compose down
 
 Une organisation possible :
 
+'
 neo4flix/
 │
 ├── frontend/
@@ -181,3 +182,4 @@ neo4flix/
 ├── .env.example
 ├── .gitignore
 └── README.md
+'

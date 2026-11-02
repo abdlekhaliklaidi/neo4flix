@@ -102,7 +102,7 @@
 
     @if (showAddMovie) {
 
-      <section class="add-movie-form">
+      <section class="add-movie-form" #movieForm>
 
         <div class="form-header">
 
@@ -316,7 +316,7 @@
       <section class="movies-grid">
 
         @for (
-          movie of movies;
+          movie of displayedMovies;
           track movie.id
         ) {
 
@@ -471,6 +471,34 @@
 
     }
 
+    <!-- INFINITE SCROLL -->
+
+<div
+  #moviesSentinel
+  class="movies-sentinel"
+  aria-hidden="true"
+></div>
+
+@if (loading && displayedMovies.length > 0) {
+  <div class="loading-more">
+    Loading more movies...
+  </div>
+}
+
+@if (!hasMoreMovies && movies.length > 0) {
+  <p class="end-message">
+    You've reached the end of the movies list.
+  </p>
+}
+
+    
+    @if (hasMoreMovies && !loading) {
+  <div
+    #moviesSentinel
+    class="movies-sentinel"
+    aria-hidden="true"
+  ></div>
+}
 
     <!-- EMPTY -->
 

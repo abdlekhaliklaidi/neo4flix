@@ -1,4 +1,4 @@
-import {Component, OnInit, ChangeDetectorRef} from '@angular/core';
+import {Component, OnInit, AfterViewInit, OnDestroy,ChangeDetectorRef, ElementRef, ViewChild} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -14,7 +14,22 @@ import {AuthService} from '../../core/auth.service';
   templateUrl: './movies.component.html',
   styleUrl: './movies.component.css'
 })
-export class MoviesComponent implements OnInit {
+export class MoviesComponent implements OnInit, AfterViewInit, OnDestroy {
+
+@ViewChild('movieForm')
+movieForm!: ElementRef<HTMLElement>;
+
+@ViewChild('moviesSentinel')
+moviesSentinel!: ElementRef<HTMLElement>;
+
+private observer?: IntersectionObserver;
+
+// Infinite Scroll
+displayedMovies: Movie[] = [];
+
+pageSize = 8;
+currentPage = 1;
+hasMoreMovies = true;
 
   movies: Movie[] = [];
 
@@ -68,6 +83,14 @@ editingMovieId: number | null = null;
   }
 }
 
+  ngAfterViewInit(): void {
+  this.setupInfiniteScroll();
+}
+
+ngOnDestroy(): void {
+  this.observer?.disconnect();
+}
+
   isLoggedIn(): boolean {
   if (typeof localStorage === 'undefined') {
     return false;
@@ -86,21 +109,37 @@ editingMovieId: number | null = null;
 
   load(): void {
 
-    this.loading = true;
-    this.msg = '';
-    this.query = '';
+  this.loading = true;
+  this.msg = '';
+  this.query = '';
 
-    this.api.movies().subscribe({
+  this.api.movies().subscribe({
 
-      next: (movies) => {
+    next: (movies) => {
+      
+      console.log('Movies received from DB:', movies.length);
+      console.log('All movies:', movies);
 
-        this.movies = movies;
-        this.loading = false;
+      this.movies = movies;
 
-        console.log('MOVIES:', this.movies);
+      this.currentPage = 1;
 
-        this.cdr.detectChanges();
-      },
+      this.displayedMovies = this.movies.slice(0, 8);
+
+      this.hasMoreMovies = this.movies.length > 8;
+
+      console.log('Initially displayed:', this.displayedMovies.length);
+      console.log('Remaining movies:', this.movies.length - this.displayedMovies.length);
+
+      this.loading = false;
+
+      this.cdr.detectChanges();
+
+      setTimeout(() => {
+        this.observeSentinel();
+      }, 100);
+
+    },
 
       error: (error) => {
 
@@ -113,6 +152,115 @@ editingMovieId: number | null = null;
 
     });
   }
+
+  loadInitialMovies(): void {
+  this.currentPage = 1;
+
+  this.displayedMovies = this.movies.slice(
+    0,
+    this.pageSize
+  );
+
+  this.hasMoreMovies =
+    this.displayedMovies.length < this.movies.length;
+
+  this.cdr.detectChanges();
+}
+
+loadMoreMovies(): void {
+
+  if (!this.hasMoreMovies || this.loading) {
+    return;
+  }
+
+  const startIndex = this.currentPage * this.pageSize;
+
+  const nextMovies = this.movies.slice(
+    startIndex,
+    startIndex + this.pageSize
+  );
+
+  console.log('📥 New movies loaded:', nextMovies.length);
+  console.log('🎬 New movies:', nextMovies);
+
+  if (nextMovies.length === 0) {
+    this.hasMoreMovies = false;
+    this.observer?.disconnect();
+    this.cdr.detectChanges();
+    return;
+  }
+
+  this.displayedMovies = [
+    ...this.displayedMovies,
+    ...nextMovies
+  ];
+
+  this.currentPage++;
+
+  this.hasMoreMovies = this.displayedMovies.length < this.movies.length;
+
+  console.log('Total displayed:', this.displayedMovies.length);
+  console.log('Total received from DB:', this.movies.length);
+  console.log('Remaining:', this.movies.length - this.displayedMovies.length);
+
+  this.cdr.detectChanges();
+
+  setTimeout(() => {
+    this.observeSentinel();
+  }, 100);
+}
+
+private setupInfiniteScroll(): void {
+
+  if (typeof IntersectionObserver === 'undefined') {
+    return;
+  }
+
+  this.observer = new IntersectionObserver(
+
+    entries => {
+
+      const entry = entries[0];
+
+      if (entry.isIntersecting) {
+        this.loadMoreMovies();
+      }
+
+    },
+
+    {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0
+    }
+
+  );
+
+  this.observeSentinel();
+}
+
+private observeSentinel(): void {
+
+  if (!this.observer) {
+    return;
+  }
+
+  this.observer.disconnect();
+
+  if (
+    this.hasMoreMovies &&
+    !this.loading &&
+    this.moviesSentinel?.nativeElement
+  ) {
+
+    this.observer.observe(
+      this.moviesSentinel.nativeElement
+    );
+
+  }
+
+}
+
 
   loadSavedMovies(): void {
 
@@ -277,6 +425,7 @@ editingMovieId: number | null = null;
       next: (movies) => {
 
         this.movies = movies;
+        this.loadInitialMovies();
         this.loading = false;
 
         this.cdr.detectChanges();
@@ -393,6 +542,13 @@ editingMovieId: number | null = null;
   this.msg = '';
 
   this.cdr.detectChanges();
+
+  setTimeout(() => {
+    this.movieForm?.nativeElement.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }, 0);
   }
 
   deleteMovie(movie: Movie): void {
@@ -413,6 +569,10 @@ editingMovieId: number | null = null;
     next: () => {
 
       this.movies = this.movies.filter(
+        item => item.id !== movie.id
+      );
+
+      this.displayedMovies = this.displayedMovies.filter(
         item => item.id !== movie.id
       );
 
@@ -460,26 +620,27 @@ editingMovieId: number | null = null;
     if (!title) {
 
       this.msg = 'Please enter a movie title.';
-
+      this.cdr.detectChanges();
       return;
     }
 
     if (!releaseYear || releaseYear < 1888) {
 
       this.msg = 'Please enter a valid release year.';
-
+      this.cdr.detectChanges();
       return;
     }
 
     if (!description) {
 
       this.msg = 'Please enter a movie description.';
-
+      this.cdr.detectChanges();
       return;
     }
 
     if (!genreName) {
     this.msg = 'Please select a movie genre.';
+    this.cdr.detectChanges();
     return;
   }
 
@@ -506,11 +667,15 @@ editingMovieId: number | null = null;
 
     next: (updatedMovie) => {
 
-      this.movies = this.movies.map(movie =>
-        movie.id === updatedMovie.id
+      this.movies = this.movies.map(movie => movie.id === updatedMovie.id
           ? updatedMovie
           : movie
       );
+      
+      this.displayedMovies = this.displayedMovies.map(movie => movie.id === updatedMovie.id
+      ? updatedMovie
+      : movie
+  );
 
       this.loading = false;
       this.showAddMovie = false;
